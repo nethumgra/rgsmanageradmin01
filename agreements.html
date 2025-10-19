@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agreements - Property MS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* --- Custom Scrollbar, Loader, File Input --- */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .file-input-label { display: inline-block; padding: 10px 16px; font-size: 14px; background-color: #3b82f6; color: white; border-radius: 8px; cursor: pointer; transition: background-color 0.3s; }
+        .file-input-label:hover { background-color: #2563eb; }
+        .file-input { display: none; }
+        .modal-content { transition: transform 0.3s ease-out, opacity 0.3s ease-out; }
+        /* --- Expired Row Styling --- */
+        .expired-row td:not(:last-child) {
+            opacity: 0.6;
+        }
+        /* --- Renew Button Highlight --- */
+        .renew-btn {
+            background-color: #16a34a; /* green-600 */
+            color: white;
+            transition: background-color 0.3s;
+        }
+         .renew-btn:hover {
+            background-color: #15803d; /* green-700 */
+         }
+         /* --- Hide elements in print --- */
+         @media print {
+            .no-print { display: none; }
+         }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-300 font-sans">
+
+    <div id="app-container" class="flex h-screen hidden">
+
+        <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between no-print">
+            <div>
+                <div class="flex items-center gap-3 mb-10">
+                    <div class="bg-blue-600 p-2 rounded-lg"><i data-lucide="building-2" class="text-white"></i></div>
+                    <h1 class="text-xl font-bold text-white">Property MS</h1>
+                </div>
+               <nav class="flex flex-col gap-2">
+                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
+                    <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
+                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
+                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
+                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="siren"></i><span>Income/Expenses</span></a>
+                   <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="boxes"></i><span>Materials Stock</span></a>
+                   <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="car"></i><span>Vehicles</span></a>
+                   <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Schedule</span></a>
+                   <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-check-2"></i><span>Agreements</span></a>
+                   <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
+                   <a href="./agreement_generator.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
+
+                </nav>
+            </div>
+            <div>
+                 <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2 mb-4 rounded-lg transition bg-slate-700 hover:bg-red-600 text-white"><i data-lucide="log-out"></i><span>Sign Out</span></button>
+                <div class="text-xs text-slate-500">
+                    <p>&copy; 2025 Property MS. All rights reserved.</p>
+                    <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-8 overflow-y-auto">
+            <section id="page-agreements" class="page">
+                <div class="flex justify-between items-center mb-6 no-print">
+                    <h2 class="text-3xl font-bold text-white">Agreement Management</h2>
+                    <button id="addAgreementBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2"><i data-lucide="plus"></i> Add New Agreement</button>
+                </div>
+
+                <div id="expiringAlerts" class="mb-6 no-print">
+                     </div>
+
+                <div class="mb-4 border-b border-slate-700 no-print">
+                    <nav class="flex -mb-px gap-6">
+                        <button id="activeTabBtn" class="tab-btn border-b-2 border-blue-500 text-blue-400 px-1 py-3 font-medium">
+                            Active
+                        </button>
+                        <button id="expiredTabBtn" class="tab-btn border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-500 px-1 py-3 font-medium transition">
+                            Expired
+                        </button>
+                    </nav>
+                </div>
+
+                <div id="activeTabPanel" class="tab-panel">
+                    <div class="bg-slate-800 rounded-lg overflow-hidden">
+                         <h3 class="text-xl font-semibold text-white p-4 bg-slate-700">Active Agreements</h3>
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-700">
+                                <tr>
+                                    <th class="p-4 font-semibold text-white">Title</th>
+                                    <th class="p-4 font-semibold text-white">Customer</th>
+                                    <th class="p-4 font-semibold text-white">Start Date</th>
+                                    <th class="p-4 font-semibold text-white">End Date</th>
+                                    <th class="p-4 font-semibold text-white">Document</th>
+                                    <th class="p-4 font-semibold text-white no-print">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="agreementTableBody">
+                                <tr><td colspan="6" class="text-center p-8 text-slate-400">Loading agreements...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="expiredTabPanel" class="tab-panel hidden">
+                     <div class="bg-slate-800 rounded-lg overflow-hidden">
+                         <h3 class="text-xl font-semibold text-white p-4 bg-slate-700">Expired Agreements</h3>
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-700">
+                                <tr>
+                                    <th class="p-4 font-semibold text-white">Title</th>
+                                    <th class="p-4 font-semibold text-white">Customer</th>
+                                    <th class="p-4 font-semibold text-white">Expired On</th>
+                                    <th class="p-4 font-semibold text-white">Document</th>
+                                    <th class="p-4 font-semibold text-white no-print">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expiredAgreementTableBody">
+                                <tr><td colspan="5" class="text-center p-8 text-slate-400">Loading expired agreements...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="agreementModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 overflow-y-auto py-10 no-print">
+        <div class="bg-slate-800 rounded-lg p-8 w-full max-w-2xl transform transition-all scale-95 opacity-0 modal-content" id="agreement-modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="agreementModalTitle" class="text-2xl font-bold text-white">Add New Agreement</h3>
+                <button id="closeAgreementModalBtn" class="text-slate-400 hover:text-white">&times;</button>
+            </div>
+            <form id="agreementForm">
+                <input type="hidden" id="agreementDocId">
+                <input type="hidden" id="existingDocumentUrl">
+                <input type="hidden" id="existingDocumentPath">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="agreementTitle" class="block mb-2 text-sm font-medium">Agreement Title / Type</label>
+                        <input type="text" id="agreementTitle" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" required>
+                    </div>
+
+                    <div>
+                        <label for="agreementCategory" class="block mb-2 text-sm font-medium">Customer Category</label>
+                        <select id="agreementCategory" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" required>
+                            <option value="">Select Category</option>
+                            </select>
+                    </div>
+                    <div>
+                        <label for="customerSelect" class="block mb-2 text-sm font-medium">Customer / Party Name</label>
+                        <select id="customerSelect" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" required disabled>
+                            <option value="">Select Category First</option>
+                            </select>
+                    </div>
+                    <div>
+                        <label for="startDate" class="block mb-2 text-sm font-medium">Start Date</label>
+                        <input type="date" id="startDate" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" required>
+                    </div>
+                    <div>
+                        <label for="endDate" class="block mb-2 text-sm font-medium">End Date</label>
+                        <input type="date" id="endDate" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" required>
+                    </div>
+                </div>
+                 <div class="mb-4">
+                    <label for="agreementNotes" class="block mb-2 text-sm font-medium">Notes / Description</label>
+                    <textarea id="agreementNotes" rows="3" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5"></textarea>
+                </div>
+                <div class="mb-6">
+                    <label for="agreementFile" class="block mb-2 text-sm font-medium">Upload Agreement Document</label>
+                    <label for="agreementFile" class="file-input-label">Choose File</label>
+                    <input type="file" id="agreementFile" class="file-input" accept=".pdf,image/*">
+                    <span id="agreementFileName" class="ml-4 text-slate-400 text-sm">No file chosen</span>
+                    <a href="#" id="existingFileLink" target="_blank" class="text-blue-400 text-sm ml-4 hidden hover:underline">View Existing Document</a>
+                </div>
+
+                <div class="flex justify-end gap-4 mt-8">
+                    <button type="button" id="cancelAgreementModalBtn" class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-700">Cancel</button>
+                    <button type="submit" id="submitAgreementBtn" class="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 font-semibold flex items-center">
+                        <span id="submitAgreementBtnText">Save Agreement</span>
+                        <div id="submitAgreementSpinner" class="loader w-5 h-5 ml-2 hidden"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-10 right-10 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 no-print"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, getDoc, updateDoc, Timestamp, writeBatch, query, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
+
+        const firebaseConfig = {
+             apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc",
+             authDomain: "rsgweb-5f36d.firebaseapp.com",
+             projectId: "rsgweb-5f36d",
+             storageBucket: "rsgweb-5f36d.firebasestorage.app",
+             messagingSenderId: "633023905515",
+             appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const storage = getStorage(app);
+        let currentUserId = null;
+
+        let allAgreements = [];
+        let allCustomers = []; // Customers ගබඩා කරන්න
+
+        // *** Customer Categories (customers.html එකෙන් ගත්තේ) ***
+        const customerCategories = [
+            "Condominium", "Hotel B&B", "Gardners", "Staff",
+            "Agency", "Gym", "Laundry", "Others"
+        ];
+        // --- ---
+
+        const appContainer = document.getElementById('app-container');
+        const signOutBtn = document.getElementById('signOutBtn');
+        const userIdSpan = document.getElementById('userId');
+        const toast = document.getElementById('toast');
+        const expiringAlertsContainer = document.getElementById('expiringAlerts');
+        const agreementTableBody = document.getElementById('agreementTableBody');
+        const expiredAgreementTableBody = document.getElementById('expiredAgreementTableBody');
+
+        const agreementModal = document.getElementById('agreementModal');
+        const agreementModalContent = document.getElementById('agreement-modal-content');
+        const agreementModalTitle = document.getElementById('agreementModalTitle');
+        const addAgreementBtn = document.getElementById('addAgreementBtn');
+        const closeAgreementModalBtn = document.getElementById('closeAgreementModalBtn');
+        const cancelAgreementModalBtn = document.getElementById('cancelAgreementModalBtn');
+        const agreementForm = document.getElementById('agreementForm');
+        const agreementFileInput = document.getElementById('agreementFile');
+        const agreementFileNameSpan = document.getElementById('agreementFileName');
+        const existingFileLink = document.getElementById('existingFileLink');
+        const submitAgreementBtn = document.getElementById('submitAgreementBtn');
+        const submitAgreementBtnText = document.getElementById('submitAgreementBtnText');
+        const submitAgreementSpinner = document.getElementById('submitAgreementSpinner');
+
+        // Modal eke aluth elements
+        const agreementCategorySelect = document.getElementById('agreementCategory');
+        const customerSelect = document.getElementById('customerSelect');
+
+        const activeTabBtn = document.getElementById('activeTabBtn');
+        const expiredTabBtn = document.getElementById('expiredTabBtn');
+        const activeTabPanel = document.getElementById('activeTabPanel');
+        const expiredTabPanel = document.getElementById('expiredTabPanel');
+
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                userIdSpan.textContent = currentUserId.substring(0, 10) + '...';
+                appContainer.classList.remove('hidden');
+                listenForAgreements();
+                listenForCustomers(); // Customers load karanna
+            } else {
+                window.location.href = './index.html';
+            }
+        });
+
+        signOutBtn.addEventListener('click', () => signOut(auth).catch(error => console.error("Sign out failed:", error)));
+
+        const showToast = (message, isSuccess = true) => {
+            toast.textContent = message;
+            toast.className = `no-print fixed bottom-10 right-10 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${isSuccess ? 'bg-green-500' : 'bg-red-500'} translate-y-0 opacity-100`;
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        };
+
+
+        // --- Modal Control ---
+        const openAgreementModal = (docId = null) => {
+            agreementForm.reset();
+            document.getElementById('agreementDocId').value = docId || '';
+            document.getElementById('existingDocumentUrl').value = '';
+            document.getElementById('existingDocumentPath').value = '';
+            agreementFileNameSpan.textContent = 'No file chosen';
+            existingFileLink.classList.add('hidden');
+            existingFileLink.href = '#';
+            submitAgreementSpinner.classList.add('hidden');
+            submitAgreementBtn.disabled = false;
+            submitAgreementBtnText.classList.remove('hidden');
+
+            delete agreementForm.dataset.renewingOldId;
+            delete agreementForm.dataset.renewingOldPath;
+
+            // Dropdown logic modal open weddi
+            populateCategoryDropdown(); // Categories load karanna
+            customerSelect.innerHTML = '<option value="">Select Category First</option>'; // Customer dropdown reset karanna
+            customerSelect.disabled = true;
+            // --- ---
+
+            if (docId) { // Editing
+                agreementModalTitle.textContent = 'Edit Agreement';
+                submitAgreementBtnText.textContent = 'Update Agreement';
+                const agreement = allAgreements.find(a => a.id === docId);
+                if (agreement) {
+                    document.getElementById('agreementTitle').value = agreement.title || '';
+
+                    // Edit karaddi dropdowns set karanna
+                    agreementCategorySelect.value = agreement.category || ''; // Category eka select karanna
+                    if (agreement.category) {
+                        populateCustomerDropdown(agreement.category); // E category eke customers load karanna
+                        customerSelect.value = agreement.customerId || ''; // Customer select karanna
+                    }
+                    // --- ---
+
+                    document.getElementById('startDate').value = agreement.startDate?.toDate ? agreement.startDate.toDate().toISOString().split('T')[0] : '';
+                    document.getElementById('endDate').value = agreement.endDate?.toDate ? agreement.endDate.toDate().toISOString().split('T')[0] : '';
+                    document.getElementById('agreementNotes').value = agreement.notes || '';
+                    document.getElementById('existingDocumentUrl').value = agreement.documentUrl || '';
+                    document.getElementById('existingDocumentPath').value = agreement.documentPath || '';
+                    if(agreement.documentUrl) {
+                        agreementFileNameSpan.textContent = 'Existing file uploaded (Choose new to replace)';
+                        existingFileLink.href = agreement.documentUrl;
+                        existingFileLink.classList.remove('hidden');
+                    }
+                } else {
+                    showToast("Agreement data not found.", false);
+                    return;
+                }
+            } else { // Adding new
+                agreementModalTitle.textContent = 'Add New Agreement';
+                submitAgreementBtnText.textContent = 'Save Agreement';
+                document.getElementById('startDate').valueAsDate = new Date();
+            }
+
+            agreementModal.classList.remove('hidden');
+            setTimeout(() => agreementModalContent.classList.remove('scale-95', 'opacity-0'), 10);
+        };
+
+        const closeAgreementModal = () => {
+            agreementModalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                agreementModal.classList.add('hidden');
+                agreementForm.reset();
+                agreementFileNameSpan.textContent = 'No file chosen';
+                existingFileLink.classList.add('hidden');
+            }, 200);
+        };
+
+        addAgreementBtn.addEventListener('click', () => openAgreementModal());
+        closeAgreementModalBtn.addEventListener('click', closeAgreementModal);
+        cancelAgreementModalBtn.addEventListener('click', closeAgreementModal);
+        agreementModal.addEventListener('click', (e) => { if (e.target === agreementModal) closeAgreementModal(); });
+        agreementFileInput.addEventListener('change', () => {
+            agreementFileNameSpan.textContent = agreementFileInput.files[0]?.name || 'No file chosen';
+            existingFileLink.classList.add('hidden');
+        });
+
+        // Tab Switching
+        const activeClasses = 'border-b-2 border-blue-500 text-blue-400';
+        const inactiveClasses = 'border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-500';
+
+        activeTabBtn.addEventListener('click', () => {
+            activeTabPanel.classList.remove('hidden');
+            expiredTabPanel.classList.add('hidden');
+            activeTabBtn.className = `tab-btn px-1 py-3 font-medium ${activeClasses}`;
+            expiredTabBtn.className = `tab-btn px-1 py-3 font-medium transition ${inactiveClasses}`;
+        });
+
+        expiredTabBtn.addEventListener('click', () => {
+            expiredTabPanel.classList.remove('hidden');
+            activeTabPanel.classList.add('hidden');
+            expiredTabBtn.className = `tab-btn px-1 py-3 font-medium ${activeClasses}`;
+            activeTabBtn.className = `tab-btn px-1 py-3 font-medium transition ${inactiveClasses}`;
+        });
+
+        // --- Dropdown Logic ---
+
+        // Category Dropdown Populate karana function eka
+        function populateCategoryDropdown() {
+            agreementCategorySelect.innerHTML = '<option value="">Select Category</option>';
+            customerCategories.sort().forEach(cat => { // Sort categories alphabetically
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                agreementCategorySelect.appendChild(option);
+            });
+        }
+
+        // Category eka select karama Customer Dropdown eka populate karana function eka
+        function populateCustomerDropdown(selectedCategory) {
+            customerSelect.innerHTML = '<option value="">Select Customer</option>';
+            if (!selectedCategory) {
+                customerSelect.innerHTML = '<option value="">Select Category First</option>';
+                customerSelect.disabled = true;
+                return;
+            }
+
+            const filteredCustomers = allCustomers.filter(cust => cust.category === selectedCategory);
+
+            if (filteredCustomers.length > 0) {
+                filteredCustomers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                filteredCustomers.forEach(cust => {
+                    const option = document.createElement('option');
+                    option.value = cust.id;
+                    option.textContent = cust.name;
+                    customerSelect.appendChild(option);
+                });
+                customerSelect.disabled = false;
+            } else {
+                customerSelect.innerHTML = '<option value="">No Customers in this Category</option>';
+                customerSelect.disabled = true;
+            }
+        }
+
+        // Category eka change karama Customer list eka update karanna listener
+        agreementCategorySelect.addEventListener('change', () => {
+            const selectedCategoryValue = agreementCategorySelect.value;
+            populateCustomerDropdown(selectedCategoryValue);
+        });
+        // --- END Dropdown Logic ---
+
+        const uploadFile = async (file) => {
+            if (!file || !currentUserId) return { url: null, path: null };
+            const filePath = `users/${currentUserId}/agreements/${Date.now()}_${file.name}`;
+            const storageRef = ref(storage, filePath);
+            try {
+                const snapshot = await uploadBytes(storageRef, file);
+                const downloadURL = await getDownloadURL(snapshot.ref);
+                return { url: downloadURL, path: filePath };
+            } catch (error) {
+                console.error("Upload Error:", error);
+                showToast(`File upload failed: ${error.message}`, false);
+                return { url: null, path: null };
+            }
+        };
+
+        const deleteFile = async (filePath) => {
+             if (!filePath) return;
+             const storageRef = ref(storage, filePath);
+             try {
+                await deleteObject(storageRef);
+             } catch (error) {
+                 if (error.code !== 'storage/object-not-found') console.error("Delete Error:", error);
+                 else console.warn("File not found for deletion:", filePath);
+             }
+        };
+
+        // --- Firestore: Save Agreement ---
+        agreementForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUserId) return;
+
+            const docId = document.getElementById('agreementDocId').value;
+            submitAgreementBtn.disabled = true;
+            submitAgreementBtnText.classList.add('hidden');
+            submitAgreementSpinner.classList.remove('hidden');
+
+            const file = agreementFileInput.files[0];
+            const existingPath = document.getElementById('existingDocumentPath').value;
+            let fileData = { url: document.getElementById('existingDocumentUrl').value || null, path: existingPath || null };
+
+            const renewingOldId = agreementForm.dataset.renewingOldId;
+            const renewingOldPath = agreementForm.dataset.renewingOldPath;
+
+            try {
+                if (file) {
+                    const uploadResult = await uploadFile(file);
+                    if (!uploadResult.url) throw new Error("File upload failed, agreement not saved.");
+                    fileData = uploadResult;
+                    if (docId && existingPath && existingPath !== fileData.path) await deleteFile(existingPath);
+                }
+
+                const startDateValue = document.getElementById('startDate').value;
+                const endDateValue = document.getElementById('endDate').value;
+
+                // Dropdown walin data ganne
+                const category = agreementCategorySelect.value;
+                const customerId = customerSelect.value;
+                // Get selected customer's name from the dropdown text
+                const customerName = customerSelect.options[customerSelect.selectedIndex]?.text || '';
+                // --- ---
+
+                if (!document.getElementById('agreementTitle').value || !category || !customerId || !startDateValue || !endDateValue) {
+                     showToast("Please fill in Title, Category, Customer, Start Date, and End Date.", false);
+                     throw new Error("Missing required fields");
+                 }
+                 if (!customerName || customerName === "No Customers in this Category" || customerName === "Select Customer" || customerName === "Select Category First") {
+                    showToast("Please select a valid customer.", false);
+                     throw new Error("Invalid customer");
+                 }
+
+                const startDate = new Date(startDateValue + 'T00:00:00');
+                const endDate = new Date(endDateValue + 'T00:00:00');
+
+                 if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) throw new Error("Invalid date format");
+                 if (endDate <= startDate) throw new Error("Invalid date range");
+
+                const agreementData = {
+                    title: document.getElementById('agreementTitle').value.trim(),
+                    // Save karana data wenas kala
+                    customerName: customerName, // Name eka save karanawa table ekata
+                    customerId: customerId,     // Customer ge ID eka save karanawa
+                    category: category,         // Category eka save karanawa
+                    // --- ---
+                    startDate: Timestamp.fromDate(startDate),
+                    endDate: Timestamp.fromDate(endDate),
+                    notes: document.getElementById('agreementNotes').value.trim(),
+                    documentUrl: fileData.url,
+                    documentPath: fileData.path,
+                };
+
+                let savedDocId = docId;
+
+                if (docId) {
+                    await updateDoc(doc(db, `users/${currentUserId}/agreements`, docId), agreementData);
+                    showToast('Agreement updated!');
+                } else {
+                    agreementData.createdAt = Timestamp.now();
+                    const newDocRef = await addDoc(collection(db, `users/${currentUserId}/agreements`), agreementData);
+                    savedDocId = newDocRef.id;
+                    showToast('Agreement added!');
+                }
+
+                if (renewingOldId && savedDocId) {
+                    try {
+                        const batch = writeBatch(db);
+                        batch.delete(doc(db, `users/${currentUserId}/agreements`, renewingOldId));
+                        await batch.commit();
+                        await deleteFile(renewingOldPath);
+                        showToast('Old agreement removed after renewal.');
+                    } catch (deleteError) {
+                        showToast("New agreement saved, but failed to remove old one.", false);
+                    }
+                }
+                closeAgreementModal();
+            } catch (error) {
+                if (!["File upload failed, agreement not saved.", "Missing required fields", "Invalid date format", "Invalid date range", "Invalid customer"].includes(error.message)) {
+                    showToast(`Error: ${error.message}`, false);
+                    console.error("Error saving agreement:", error); // Log the full error
+                }
+            } finally {
+                delete agreementForm.dataset.renewingOldId;
+                delete agreementForm.dataset.renewingOldPath;
+                submitAgreementBtn.disabled = false;
+                submitAgreementBtnText.classList.remove('hidden');
+                submitAgreementSpinner.classList.add('hidden');
+            }
+        });
+
+
+        // --- Firestore Listeners ---
+        function listenForAgreements() {
+             if (!currentUserId) return;
+            const agreementsRef = collection(db, `users/${currentUserId}/agreements`);
+            onSnapshot(agreementsRef, (snapshot) => {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+                let active = []; let expired = [];
+                allAgreements = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                allAgreements.forEach(agreement => {
+                    const endDate = agreement.endDate?.toDate ? new Date(agreement.endDate.toDate().getFullYear(), agreement.endDate.toDate().getMonth(), agreement.endDate.toDate().getDate()) : null;
+                    if (endDate && endDate < today) expired.push(agreement);
+                    else active.push(agreement);
+                });
+
+                active.sort((a,b) => (a.endDate?.toMillis() || 0) - (b.endDate?.toMillis() || 0));
+                expired.sort((a,b) => (b.endDate?.toMillis() || 0) - (a.endDate?.toMillis() || 0));
+
+                renderAgreementsTable(active);
+                renderExpiredAgreementsTable(expired);
+                renderExpirationAlerts(active);
+
+            }, (error) => {
+                console.error("Error listening for agreements: ", error);
+                showToast("Error loading agreements.", false);
+                agreementTableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-red-400">Error loading data.</td></tr>`;
+                expiredAgreementTableBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-red-400">Error loading data.</td></tr>`;
+            });
+        }
+
+        // Customers listen karana function
+        function listenForCustomers() {
+            if (!currentUserId) return;
+            const customersRef = query(collection(db, `users/${currentUserId}/customers`), orderBy("name"));
+            onSnapshot(customersRef, (snapshot) => {
+                allCustomers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log("Customers loaded:", allCustomers.length);
+                // If modal is open, refresh customer dropdown if category is selected
+                if (!agreementModal.classList.contains('hidden')) {
+                   const currentCat = agreementCategorySelect.value;
+                   if (currentCat) populateCustomerDropdown(currentCat);
+                }
+            }, (error) => {
+                console.error("Error listening for customers: ", error);
+                showToast("Could not load customers data.", false);
+                agreementCategorySelect.disabled = true;
+                customerSelect.disabled = true;
+                customerSelect.innerHTML = '<option value="">Error loading customers</option>';
+            });
+        }
+        // --- ---
+
+        // --- Render Tables ---
+        function renderAgreementsTable(agreements) {
+            agreementTableBody.innerHTML = '';
+            if (agreements.length === 0) {
+                agreementTableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">No active agreements found.</td></tr>`; return;
+            }
+            agreements.forEach(a => {
+                const start = a.startDate?.toDate ? a.startDate.toDate().toLocaleDateString() : 'N/A';
+                const end = a.endDate?.toDate ? a.endDate.toDate().toLocaleDateString() : 'N/A';
+                const docLink = a.documentUrl ? `<a href="${a.documentUrl}" target="_blank" class="text-blue-400 hover:underline">View</a>` : '<span class="text-slate-500">N/A</span>';
+                const row = agreementTableBody.insertRow();
+                row.innerHTML = `
+                    <td class="p-4">${a.title || 'N/A'}</td>
+                    <td class="p-4">${a.customerName || 'N/A'}</td>
+                    <td class="p-4">${start}</td>
+                    <td class="p-4">${end}</td>
+                    <td class="p-4">${docLink}</td>
+                    <td class="p-4 flex gap-2 no-print">
+                        <button data-id="${a.id}" class="edit-btn text-blue-400 hover:text-blue-300"><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
+                        <button data-id="${a.id}" data-path="${a.documentPath || ''}" class="delete-btn text-red-400 hover:text-red-300"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
+                    </td>`;
+            });
+            lucide.createIcons();
+        }
+        function renderExpiredAgreementsTable(agreements) {
+             expiredAgreementTableBody.innerHTML = '';
+            if (agreements.length === 0) {
+                expiredAgreementTableBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">No expired agreements found.</td></tr>`; return;
+            }
+            agreements.forEach(a => {
+                const expiredDate = a.endDate?.toDate ? a.endDate.toDate().toLocaleDateString() : 'N/A';
+                const docLink = a.documentUrl ? `<a href="${a.documentUrl}" target="_blank" class="text-blue-400 hover:underline">View</a>` : '<span class="text-slate-500">N/A</span>';
+                const row = expiredAgreementTableBody.insertRow();
+                row.classList.add('expired-row');
+                row.innerHTML = `
+                    <td class="p-4">${a.title || 'N/A'}</td>
+                    <td class="p-4">${a.customerName || 'N/A'}</td>
+                    <td class="p-4">${expiredDate}</td>
+                    <td class="p-4">${docLink}</td>
+                    <td class="p-4 flex gap-2 no-print">
+                        <button data-id="${a.id}" data-path="${a.documentPath || ''}" class="renew-btn text-white text-sm px-3 py-1.5 rounded-md flex items-center gap-1"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Renew</button>
+                        <button data-id="${a.id}" data-path="${a.documentPath || ''}" class="delete-expired-btn text-red-400 hover:text-red-300"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
+                    </td>`;
+            });
+            lucide.createIcons();
+        }
+        function renderExpirationAlerts(activeAgreements) {
+            expiringAlertsContainer.innerHTML = '';
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const alertEndDate = new Date(today); alertEndDate.setDate(today.getDate() + 3);
+            const expiringSoon = activeAgreements.filter(a => {
+                const endDate = a.endDate?.toDate ? new Date(a.endDate.toDate().getFullYear(), a.endDate.toDate().getMonth(), a.endDate.toDate().getDate()) : null;
+                return endDate && endDate >= today && endDate < alertEndDate;
+            });
+            if (expiringSoon.length > 0) {
+                expiringAlertsContainer.innerHTML = `<h3 class="text-xl font-bold text-white mb-4">Agreements Expiring Soon (Next 3 Days)</h3>`;
+                const list = document.createElement('div'); list.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
+                expiringSoon.forEach(a => {
+                    const endDate = a.endDate.toDate();
+                    const alertEl = document.createElement('div'); alertEl.className = 'bg-yellow-800 border border-yellow-600 p-4 rounded-lg flex items-start gap-3';
+                    alertEl.innerHTML = `<div><i data-lucide="alert-triangle" class="w-5 h-5 text-yellow-300 flex-shrink-0 mt-1"></i></div><div><p class="font-bold">${a.title || 'N/A'}</p><p class="text-sm text-yellow-200">Customer: ${a.customerName || 'N/A'}</p><p class="text-sm text-yellow-300 font-semibold">Expires On: ${endDate.toLocaleDateString()}</p>${a.documentUrl ? `<a href="${a.documentUrl}" target="_blank" class="text-sm text-blue-300 hover:underline mt-1 inline-block">View Document</a>` : ''}</div>`;
+                    list.appendChild(alertEl);
+                });
+                expiringAlertsContainer.appendChild(list); lucide.createIcons();
+            }
+        }
+
+        // --- Table Click Handlers ---
+        async function handleDelete(docId, filePath) {
+             if (confirm('Are you sure you want to permanently delete this agreement and its document?')) {
+                 try {
+                     const batch = writeBatch(db); batch.delete(doc(db, `users/${currentUserId}/agreements`, docId));
+                     await batch.commit(); await deleteFile(filePath); showToast('Agreement deleted permanently.');
+                 } catch (error) { console.error("Error deleting agreement:", error); showToast(`Error deleting: ${error.message}`, false); }
+             }
+        }
+        agreementTableBody.addEventListener('click', async (e) => {
+            const editBtn = e.target.closest('.edit-btn'); if (editBtn) { openAgreementModal(editBtn.dataset.id); return; }
+            const deleteBtn = e.target.closest('.delete-btn'); if (deleteBtn) { await handleDelete(deleteBtn.dataset.id, deleteBtn.dataset.path); }
+        });
+        expiredAgreementTableBody.addEventListener('click', async (e) => {
+            const renewBtn = e.target.closest('.renew-btn');
+            if (renewBtn) {
+                 const docId = renewBtn.dataset.id;
+                 const oldPath = renewBtn.dataset.path;
+                 const agreement = allAgreements.find(a => a.id === docId);
+                 if (!agreement) { showToast("Cannot find agreement data.", false); return; }
+                 openAgreementModal();
+                 setTimeout(() => {
+                     document.getElementById('agreementTitle').value = (agreement.title || '') + " (Renewed)";
+                     // Renew karaddi dropdowns set karanna
+                     if(agreement.category) {
+                         agreementCategorySelect.value = agreement.category;
+                         populateCustomerDropdown(agreement.category);
+                         // Check if customer exists before setting value
+                         if (allCustomers.some(c => c.id === agreement.customerId && c.category === agreement.category)) {
+                            customerSelect.value = agreement.customerId;
+                         } else {
+                            console.warn(`Customer ID ${agreement.customerId} not found in category ${agreement.category} for renewal.`);
+                            // Optionally, reset the customer dropdown or show a message
+                            customerSelect.value = "";
+                            customerSelect.disabled = true;
+                            customerSelect.innerHTML = '<option value="">Original Customer Not Found</option>';
+                         }
+                     }
+                     // --- ---
+                     document.getElementById('startDate').valueAsDate = new Date();
+                     const nextYear = new Date(); nextYear.setFullYear(nextYear.getFullYear() + 1);
+                     document.getElementById('endDate').value = nextYear.toISOString().split('T')[0];
+                     document.getElementById('agreementNotes').value = agreement.notes || '';
+                     agreementForm.dataset.renewingOldId = docId;
+                     agreementForm.dataset.renewingOldPath = oldPath;
+                     showToast("Enter new details & upload document for renewal.", true);
+                 }, 100); // Increased delay slightly
+                 return;
+            }
+            const deleteExpiredBtn = e.target.closest('.delete-expired-btn');
+            if (deleteExpiredBtn) {
+                await handleDelete(deleteExpiredBtn.dataset.id, deleteExpiredBtn.dataset.path);
+            }
+        });
+
+        lucide.createIcons();
+
+    </script>
+
+</body>
+</html>

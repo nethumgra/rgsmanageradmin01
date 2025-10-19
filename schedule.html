@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Calendar - Property MS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+        .calendar-day {
+            min-height: 120px;
+        }
+        .event-header {
+            cursor: pointer;
+        }
+        /* Custom radio button for colors */
+        .color-radio {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .color-radio:checked {
+            border-color: #fff;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-300 font-sans">
+
+    <div id="app-container" class="flex h-screen hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center gap-3 mb-10">
+                    <div class="bg-blue-600 p-2 rounded-lg">
+                        <i data-lucide="building-2" class="text-white"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-white">Property MS</h1>
+                </div>
+           <nav class="flex flex-col gap-2">
+                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
+                    <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
+                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
+                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
+                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="siren"></i><span>Income/Expenses</span></a>
+                   <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="boxes"></i><span>Materials Stock</span></a>
+                   <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="car"></i><span>Vehicles</span></a>
+                   <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Schedule</span></a>
+                   <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-check-2"></i><span>Agreements</span></a>
+                   <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
+                   <a href="./agreement_generator.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
+
+                </nav>
+            </div>
+            <div>
+                 <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2 mb-4 rounded-lg transition bg-slate-700 hover:bg-red-600 text-white">
+                    <i data-lucide="log-out"></i><span>Sign Out</span>
+                </button>
+                <div class="text-xs text-slate-500">
+                    <p>&copy; 2025 Property MS. All rights reserved.</p>
+                    <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8 overflow-y-auto flex flex-col">
+            <section id="page-schedule" class="page flex-1 flex flex-col">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-white">Schedule</h2>
+                     <button id="addEventBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2">
+                        <i data-lucide="plus"></i> Add Event
+                    </button>
+                </div>
+
+                <!-- Upcoming Events Alerts -->
+                <div id="upcomingEvents" class="mb-6"></div>
+
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex items-center gap-4">
+                        <h3 id="monthYear" class="text-2xl font-semibold text-white"></h3>
+                        <button id="prevMonth" class="p-2 rounded-md bg-slate-700 hover:bg-slate-600"><i data-lucide="chevron-left"></i></button>
+                        <button id="nextMonth" class="p-2 rounded-md bg-slate-700 hover:bg-slate-600"><i data-lucide="chevron-right"></i></button>
+                        <button id="todayBtn" class="px-4 py-2 rounded-md bg-slate-700 hover:bg-slate-600 text-sm">Today</button>
+                    </div>
+                </div>
+
+                <div class="flex-1 flex flex-col bg-slate-800 rounded-lg overflow-hidden">
+                    <div class="grid grid-cols-7 text-center font-semibold text-slate-400 border-b border-slate-700">
+                        <div class="p-4">Sun</div><div class="p-4">Mon</div><div class="p-4">Tue</div><div class="p-4">Wed</div><div class="p-4">Thu</div><div class="p-4">Fri</div><div class="p-4">Sat</div>
+                    </div>
+                    <div id="calendarGrid" class="calendar-grid flex-1"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add/Edit Event Modal -->
+    <div id="eventModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 overflow-y-auto py-10">
+        <div class="bg-slate-800 rounded-lg p-8 w-full max-w-2xl transform transition-all scale-95 opacity-0" id="event-modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="eventModalTitle" class="text-2xl font-bold text-white">Add New Event</h3>
+                <button id="closeEventModalBtn" class="text-slate-400 hover:text-white">&times;</button>
+            </div>
+            <form id="eventForm">
+                <input type="hidden" id="eventDocId">
+                <div class="relative mb-4">
+                    <i data-lucide="type" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="eventTitle" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 pl-10" placeholder="Event Title" required>
+                </div>
+                
+                <div class="relative mb-4">
+                     <i data-lucide="align-left" class="absolute left-3 top-3 text-slate-400"></i>
+                    <textarea id="eventDescription" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 pl-10" rows="3" placeholder="Description / Notes..."></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                     <div>
+                        <label for="eventType" class="block mb-2 text-sm font-medium">Event Type</label>
+                        <select id="eventType" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3">
+                            <option value="General">General Event</option>
+                            <option value="Income">Expected Income</option>
+                            <option value="Expense">Expected Expense</option>
+                        </select>
+                    </div>
+                    <div id="amountWrapper" class="hidden relative">
+                         <label for="eventAmount" class="block mb-2 text-sm font-medium">Amount (Rs)</label>
+                         <i data-lucide="siren" class="absolute left-3 bottom-3 text-slate-400"></i>
+                        <input type="number" id="eventAmount" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 pl-10" placeholder="e.g., 5000">
+                    </div>
+                </div>
+                
+                 <div id="financeOptionsWrapper" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="eventCategory" class="block mb-2 text-sm font-medium">Category</label>
+                        <input type="text" id="eventCategory" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3" placeholder="e.g., Salary, Rent">
+                    </div>
+                     <div>
+                        <label for="eventPaymentMethod" class="block mb-2 text-sm font-medium">Payment Method</label>
+                        <select id="eventPaymentMethod" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3">
+                            <option value="Cash">Cash</option>
+                            <option value="Check">Check</option>
+                            <option value="Bank Payment">Bank Payment</option>
+                        </select>
+                    </div>
+                    <div id="incomeTypeWrapper" class="hidden">
+                        <label for="incomeType" class="block mb-2 text-sm font-medium">Income Recurrence</label>
+                        <select id="incomeType" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3">
+                            <option value="Variable">Variable (One-time)</option>
+                            <option value="Fixed">Fixed (Monthly Recurring)</option>
+                        </select>
+                    </div>
+                    <div id="expenseTypeWrapper" class="hidden">
+                        <label for="expenseType" class="block mb-2 text-sm font-medium">Expense Recurrence</label>
+                        <select id="expenseType" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3">
+                            <option value="Variable">Variable (One-time)</option>
+                            <option value="Fixed">Fixed (Monthly Recurring)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label for="eventDate" class="block mb-2 text-sm font-medium">Date</label>
+                        <input type="date" id="eventDate" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3" required>
+                    </div>
+                     <div>
+                        <label for="eventTime" class="block mb-2 text-sm font-medium">Time</label>
+                        <input type="time" id="eventTime" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3">
+                    </div>
+                </div>
+
+                 <div class="mt-4">
+                    <label class="block mb-2 text-sm font-medium">Color Tag</label>
+                    <div id="eventColor" class="flex items-center gap-3">
+                        <input type="radio" name="color" value="bg-blue-500" class="color-radio bg-blue-500" checked><input type="radio" name="color" value="bg-green-500" class="color-radio bg-green-500"><input type="radio" name="color" value="bg-yellow-500" class="color-radio bg-yellow-500"><input type="radio" name="color" value="bg-red-500" class="color-radio bg-red-500"><input type="radio" name="color" value="bg-purple-500" class="color-radio bg-purple-500">
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mt-8">
+                     <div>
+                        <button type="button" id="markCompletedBtn" class="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold hidden items-center gap-2"><i data-lucide="check-circle"></i>Mark as Completed</button>
+                        <button type="button" id="deleteEventBtn" class="px-6 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold hidden ml-2">Delete</button>
+                    </div>
+                    <div class="flex gap-4">
+                        <button type="button" id="cancelEventModalBtn" class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-700">Cancel</button>
+                        <button type="submit" id="submitEventBtn" class="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 font-semibold flex items-center">
+                            <span id="submitEventBtnText">Save</span>
+                            <div id="submitEventSpinner" class="loader w-5 h-5 ml-2 hidden"></div>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-10 right-10 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, getDoc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+
+        const firebaseConfig = {
+             apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc",
+            authDomain: "rsgweb-5f36d.firebaseapp.com",
+            projectId: "rsgweb-5f36d",
+            storageBucket: "rsgweb-5f36d.firebasestorage.app",
+            messagingSenderId: "633023905515",
+            appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        let currentUserId = null;
+        let allEvents = [];
+        let currentDate = new Date();
+
+        // --- DOM Elements ---
+        const appContainer = document.getElementById('app-container');
+        const signOutBtn = document.getElementById('signOutBtn');
+        const userIdSpan = document.getElementById('userId');
+        const toast = document.getElementById('toast');
+        const calendarGrid = document.getElementById('calendarGrid');
+        const monthYearEl = document.getElementById('monthYear');
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
+        const todayBtn = document.getElementById('todayBtn');
+        const upcomingEventsContainer = document.getElementById('upcomingEvents');
+        
+        // Modal
+        const eventModal = document.getElementById('eventModal');
+        const eventModalContent = document.getElementById('event-modal-content');
+        const eventModalTitle = document.getElementById('eventModalTitle');
+        const addEventBtn = document.getElementById('addEventBtn');
+        const closeEventModalBtn = document.getElementById('closeEventModalBtn');
+        const cancelEventModalBtn = document.getElementById('cancelEventModalBtn');
+        const eventForm = document.getElementById('eventForm');
+        const eventTypeSelect = document.getElementById('eventType');
+        const amountWrapper = document.getElementById('amountWrapper');
+        const financeOptionsWrapper = document.getElementById('financeOptionsWrapper');
+        const incomeTypeWrapper = document.getElementById('incomeTypeWrapper');
+        const incomeTypeSelect = document.getElementById('incomeType');
+        const expenseTypeWrapper = document.getElementById('expenseTypeWrapper');
+        const expenseTypeSelect = document.getElementById('expenseType');
+        const markCompletedBtn = document.getElementById('markCompletedBtn');
+        const deleteEventBtn = document.getElementById('deleteEventBtn');
+        const submitEventBtn = document.getElementById('submitEventBtn');
+        const submitEventBtnText = document.getElementById('submitEventBtnText');
+        const submitEventSpinner = document.getElementById('submitEventSpinner');
+
+        // --- Auth ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                userIdSpan.textContent = currentUserId.substring(0, 10) + '...';
+                appContainer.classList.remove('hidden');
+                renderCalendar();
+                listenForEvents();
+            } else {
+               window.location.href = './index.html';
+            }
+        });
+        
+        signOutBtn.addEventListener('click', () => signOut(auth));
+        
+        // --- Calendar Logic ---
+        function renderCalendar() {
+            calendarGrid.innerHTML = '';
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            monthYearEl.textContent = `${currentDate.toLocaleString('default', { month: 'long' })} ${year}`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+
+            for (let i = 0; i < firstDay; i++) {
+                calendarGrid.innerHTML += '<div></div>';
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const isToday = date.toDateString() === today.toDateString();
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day border-t border-l border-slate-700 p-2 overflow-y-auto';
+                dayEl.innerHTML = `<div class="font-bold ${isToday ? 'text-blue-400' : ''}">${day}</div><div id="events-${day}" class="mt-1 space-y-1"></div>`;
+                calendarGrid.appendChild(dayEl);
+            }
+            renderEvents();
+        }
+
+        prevMonthBtn.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        });
+
+        nextMonthBtn.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        });
+        
+        todayBtn.addEventListener('click', () => {
+            currentDate = new Date();
+            renderCalendar();
+        });
+        
+        function renderEvents() {
+            allEvents.sort((a,b) => a.date.toDate() - b.date.toDate()); 
+            document.querySelectorAll('[id^="events-"]').forEach(el => el.innerHTML = '');
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const monthEvents = allEvents.filter(e => {
+                const eventDate = e.date.toDate();
+                return eventDate.getFullYear() === year && eventDate.getMonth() === month;
+            });
+            
+            monthEvents.forEach(event => {
+                const eventDate = event.date.toDate();
+                const day = eventDate.getDate();
+                const eventsContainer = document.getElementById(`events-${day}`);
+                if(eventsContainer){
+                    const eventEl = document.createElement('div');
+                    let completedClass = event.status === 'Completed' ? 'opacity-60 line-through' : '';
+                    eventEl.className = `event-container p-1.5 rounded-md text-white ${event.color} ${completedClass}`;
+                     
+                    const timeString = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                    
+                    let content = `
+                        <div data-id="${event.id}" class="event-header cursor-pointer flex items-center justify-between text-sm">
+                            <div class="truncate">
+                                <span class="font-bold">${timeString}</span> - ${event.title}
+                                ${event.type !== 'General' ? `<span class="font-semibold ml-1">(${event.amount} Rs)</span>` : ''}
+                            </div>
+                            <div class="flex items-center flex-shrink-0">
+                                ${event.status === 'Completed' ? `<i data-lucide="check-circle" class="w-4 h-4 ml-1"></i>` : ''}
+                            </div>
+                        </div>
+                        ${event.description ? `
+                            <div class="toggle-description-btn cursor-pointer mt-1 text-xs text-slate-300 flex items-center justify-between">
+                                <span class="truncate italic">${event.description}</span>
+                                <i data-lucide="chevron-down" class="w-4 h-4 ml-1 flex-shrink-0 description-arrow transition-transform"></i>
+                            </div>
+                            <div class="event-description hidden mt-2 text-sm text-slate-200 border-l-2 border-slate-400 pl-2">${event.description}</div>` 
+                        : ''}
+                    `;
+                    eventEl.innerHTML = content;
+                    eventsContainer.appendChild(eventEl);
+                }
+            });
+            lucide.createIcons();
+        }
+        
+        // --- Firestore ---
+        function listenForEvents() {
+            if(!currentUserId) return;
+            onSnapshot(collection(db, `users/${currentUserId}/schedule`), snapshot => {
+                allEvents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderCalendar();
+                checkForUpcomingEvents();
+            });
+        }
+        
+        // --- Modal & Form ---
+        const openEventModal = (id = null) => {
+            if (id) {
+                const event = allEvents.find(e => e.id === id);
+                if(event) {
+                    const eventDate = event.date.toDate();
+                    eventModalTitle.textContent = 'Edit Event';
+                    document.getElementById('eventDocId').value = id;
+                    document.getElementById('eventTitle').value = event.title;
+                    document.getElementById('eventDescription').value = event.description || '';
+                    document.getElementById('eventDate').value = eventDate.toISOString().split('T')[0];
+                    document.getElementById('eventTime').value = eventDate.toTimeString().split(' ')[0].substring(0, 5);
+                    document.querySelector(`input[name="color"][value="${event.color}"]`).checked = true;
+                    document.getElementById('eventType').value = event.type || 'General';
+                    document.getElementById('eventAmount').value = event.amount || '';
+                    document.getElementById('eventCategory').value = event.category || '';
+                    document.getElementById('eventPaymentMethod').value = event.paymentMethod || 'Cash';
+
+                    if(event.type === 'Expense'){
+                        expenseTypeSelect.value = event.expenseType || 'Variable';
+                    }
+                    if(event.type === 'Income'){
+                        incomeTypeSelect.value = event.incomeType || 'Variable';
+                    }
+                    eventTypeSelect.dispatchEvent(new Event('change'));
+
+                    deleteEventBtn.classList.remove('hidden');
+                    if (event.type !== 'General' && event.status !== 'Completed') {
+                        markCompletedBtn.classList.remove('hidden');
+                         markCompletedBtn.style.display = 'flex';
+                    } else {
+                        markCompletedBtn.classList.add('hidden');
+                    }
+                }
+            } else {
+                eventModalTitle.textContent = 'Add New Event';
+                document.getElementById('eventDate').valueAsDate = new Date();
+                const now = new Date();
+                document.getElementById('eventTime').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                deleteEventBtn.classList.add('hidden');
+                markCompletedBtn.classList.add('hidden');
+            }
+            eventModal.classList.remove('hidden');
+            setTimeout(() => eventModalContent.classList.remove('scale-95', 'opacity-0'), 10);
+        };
+        
+        const closeEventModal = () => {
+            eventModalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                eventModal.classList.add('hidden');
+                eventForm.reset();
+                document.getElementById('eventDocId').value = '';
+                amountWrapper.classList.add('hidden');
+                financeOptionsWrapper.classList.add('hidden');
+                incomeTypeWrapper.classList.add('hidden');
+                expenseTypeWrapper.classList.add('hidden');
+            }, 200);
+        };
+
+        addEventBtn.addEventListener('click', () => openEventModal());
+        closeEventModalBtn.addEventListener('click', closeEventModal);
+        cancelEventModalBtn.addEventListener('click', closeEventModal);
+        eventModal.addEventListener('click', e => { if(e.target === eventModal) closeEventModal(); });
+        
+        calendarGrid.addEventListener('click', e => {
+            const toggleBtn = e.target.closest('.toggle-description-btn');
+            if (toggleBtn) {
+                const descriptionEl = toggleBtn.parentElement.querySelector('.event-description');
+                const arrowIcon = toggleBtn.querySelector('.description-arrow');
+                if (descriptionEl) {
+                    descriptionEl.classList.toggle('hidden');
+                    arrowIcon?.classList.toggle('rotate-180');
+                }
+                return;
+            }
+            const eventHeader = e.target.closest('.event-header');
+            if (eventHeader) {
+                openEventModal(eventHeader.dataset.id);
+            }
+        });
+        
+        eventTypeSelect.addEventListener('change', () => {
+            const isFinance = eventTypeSelect.value === 'Income' || eventTypeSelect.value === 'Expense';
+            financeOptionsWrapper.classList.toggle('hidden', !isFinance);
+            amountWrapper.classList.toggle('hidden', !isFinance);
+            incomeTypeWrapper.classList.toggle('hidden', eventTypeSelect.value !== 'Income');
+            expenseTypeWrapper.classList.toggle('hidden', eventTypeSelect.value !== 'Expense');
+        });
+
+        eventForm.addEventListener('submit', async e => {
+            e.preventDefault();
+            const docId = document.getElementById('eventDocId').value;
+            submitEventBtn.disabled = true;
+            submitEventBtnText.classList.add('hidden');
+            submitEventSpinner.classList.remove('hidden');
+            
+            try {
+                const dateStr = document.getElementById('eventDate').value;
+                const timeStr = document.getElementById('eventTime').value || '00:00';
+                const fullDate = new Date(`${dateStr}T${timeStr}`);
+
+                const data = {
+                    title: document.getElementById('eventTitle').value,
+                    description: document.getElementById('eventDescription').value,
+                    date: fullDate,
+                    color: document.querySelector('input[name="color"]:checked').value,
+                    type: document.getElementById('eventType').value,
+                    amount: parseFloat(document.getElementById('eventAmount').value) || 0,
+                    category: document.getElementById('eventCategory').value,
+                    paymentMethod: document.getElementById('eventPaymentMethod').value,
+                    status: 'Pending',
+                };
+                 if (data.type === 'Income') data.incomeType = incomeTypeSelect.value;
+                 if (data.type === 'Expense') data.expenseType = expenseTypeSelect.value;
+
+                if(docId) {
+                    await updateDoc(doc(db, `users/${currentUserId}/schedule`, docId), data);
+                    showToast('Event updated!');
+                } else {
+                    const recurringType = data.type === 'Income' ? data.incomeType : data.expenseType;
+                    if (data.type !== 'General' && recurringType === 'Fixed') {
+                        const recurringId = crypto.randomUUID();
+                        const batch = writeBatch(db);
+                        for(let i=0; i < 12; i++) {
+                            const futureDate = new Date(fullDate);
+                            futureDate.setMonth(fullDate.getMonth() + i);
+                            const newDocRef = doc(collection(db, `users/${currentUserId}/schedule`));
+                            batch.set(newDocRef, {...data, date: futureDate, recurringId});
+                        }
+                        await batch.commit();
+                        showToast(`Recurring ${data.type.toLowerCase()} scheduled for 12 months!`);
+                    } else {
+                        await addDoc(collection(db, `users/${currentUserId}/schedule`), data);
+                        showToast('Event added!');
+                    }
+                }
+                closeEventModal();
+            } catch (err) {
+                showToast(`Error: ${err.message}`, false);
+            } finally {
+                 submitEventBtn.disabled = false;
+                submitEventBtnText.classList.remove('hidden');
+                submitEventSpinner.classList.add('hidden');
+            }
+        });
+        
+        deleteEventBtn.addEventListener('click', async () => {
+            const docId = document.getElementById('eventDocId').value;
+            const event = allEvents.find(e => e.id === docId);
+
+            if(docId && event){
+                if (event.recurringId && confirm('This is a recurring event. Delete all future occurrences as well?')) {
+                    const batch = writeBatch(db);
+                    const futureEventsToDelete = allEvents.filter(e =>
+                        e.recurringId === event.recurringId && e.date.toDate() >= event.date.toDate()
+                    );
+                    futureEventsToDelete.forEach(e => {
+                        batch.delete(doc(db, `users/${currentUserId}/schedule`, e.id));
+                    });
+                    await batch.commit();
+                    showToast('All future recurring events deleted!');
+                } else if (confirm('Are you sure you want to delete this event?')) {
+                    await deleteDoc(doc(db, `users/${currentUserId}/schedule`, docId));
+                    showToast('Event deleted!');
+                }
+                closeEventModal();
+            }
+        });
+
+        markCompletedBtn.addEventListener('click', async () => {
+            const docId = document.getElementById('eventDocId').value;
+            if (!docId) return;
+
+            const event = allEvents.find(e => e.id === docId);
+            if (!event) return showToast('Event not found', false);
+
+            try {
+                const transactionData = {
+                    date: event.date, description: `Scheduled: ${event.title}`, category: event.category || 'Scheduled',
+                    type: event.type, amount: event.amount, paymentMethod: event.paymentMethod || 'Cash'
+                };
+                await addDoc(collection(db, `users/${currentUserId}/transactions`), transactionData);
+                await updateDoc(doc(db, `users/${currentUserId}/schedule`, docId), { status: 'Completed' });
+                showToast('Event marked as completed & transaction added!');
+                closeEventModal();
+            } catch (error) {
+                showToast(`Error: ${error.message}`, false);
+            }
+        });
+
+        function checkForUpcomingEvents() {
+            upcomingEventsContainer.innerHTML = '';
+            const now = new Date();
+            const sevenDaysFromNow = new Date();
+            sevenDaysFromNow.setDate(now.getDate() + 7);
+
+            const upcoming = allEvents.filter(event => {
+                const eventDate = event.date.toDate();
+                return event.status !== 'Completed' && eventDate > now && eventDate <= sevenDaysFromNow;
+            }).sort((a,b) => a.date.toDate() - b.date.toDate());
+            
+            if(upcoming.length > 0) {
+                 upcomingEventsContainer.innerHTML = `<h3 class="text-xl font-bold text-white mb-4">Upcoming Events (Next 7 Days)</h3>`;
+                 const list = document.createElement('div');
+                 list.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
+                 upcoming.forEach(event => {
+                     const eventDate = event.date.toDate();
+                     const alertEl = document.createElement('div');
+                     alertEl.className = 'bg-slate-700 p-4 rounded-lg flex items-start gap-4';
+                     
+                     const iconColor = event.type === 'Income' ? 'text-green-400' : event.type === 'Expense' ? 'text-red-400' : 'text-blue-400';
+
+                     alertEl.innerHTML = `
+                        <div><i data-lucide="bell-ring" class="w-5 h-5 ${iconColor}"></i></div>
+                        <div>
+                            <p class="font-bold">${event.title}</p>
+                            <p class="text-sm text-slate-400">${eventDate.toLocaleDateString()} at ${eventDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                            ${event.type !== 'General' ? `<p class="font-semibold">${event.amount} Rs</p>` : ''}
+                        </div>
+                     `;
+                     list.appendChild(alertEl);
+                 });
+                 upcomingEventsContainer.appendChild(list);
+                 lucide.createIcons();
+            }
+
+        }
+
+        const showToast = (message, isSuccess = true) => {
+            toast.textContent = message;
+            toast.className = `fixed bottom-10 right-10 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+        };
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
+

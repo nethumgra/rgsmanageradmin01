@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposal Generator - Property MS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <style>
+        /* --- Standard Styles --- */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- Proposal Preview Styling --- */
+        #proposal-preview {
+            position: relative; 
+            background-color: white; 
+            width: 210mm; /* A4 width */
+            min-height: 297mm; /* A4 height */
+            margin: 0 auto; 
+            box-sizing: border-box;
+            padding-top: 35mm;
+            padding-bottom: 18mm;
+            padding-left: 15mm;
+            padding-right: 15mm;
+
+            background-image: url('letterhead.png');
+            background-repeat: no-repeat;
+            background-size: 100% 100%; 
+            background-position: center;
+        }
+
+        #proposal-preview > div,
+        #proposal-preview h2,
+        #proposal-preview p,
+        #proposal-preview table {
+            position: relative;
+            z-index: 1;
+            page-break-inside: avoid !important; 
+        }
+
+        #proposal-preview table, 
+        #proposal-preview tr,
+        #proposal-preview td,
+        #proposal-preview th {
+            page-break-inside: avoid !important;
+        }
+
+
+        #proposal-preview-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 1rem;
+            background-color: #e2e8f0;
+            flex-grow: 1;
+            overflow: auto;
+        }
+
+
+        /* --- Print Styles --- */
+        @media print {
+            body {
+                background-color: white !important; color: black !important;
+                 -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+                 margin: 0 !important; padding: 0 !important; width: 210mm !important;
+                 height: 297mm !important; overflow: hidden !important;
+            }
+            .no-print { display: none !important; }
+            #proposal-preview-container {
+                 padding: 0 !important; background: none !important; border: none !important;
+                 box-shadow: none !important; margin: 0 !important; width: 100% !important;
+                 display: block !important; height: 297mm !important; overflow: hidden !important;
+            }
+            #proposal-preview {
+                display: block !important; width: 210mm !important; height: 297mm !important;
+                box-sizing: border-box !important; margin: 0 !important; 
+                border: none !important; box-shadow: none !important; color: black !important;
+                background-color: white !important; border-radius: 0 !important;
+                position: relative !important; overflow: hidden !important;
+                padding-top: 35mm !important; 
+                padding-bottom: 18mm !important;
+                padding-left: 15mm !important;
+                padding-right: 15mm !important;
+                
+                background-image: url('letterhead.png') !important;
+                background-repeat: no-repeat !important;
+                background-size: 100% 100% !important; 
+                background-position: center !important;
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important;
+            }
+
+             /* Content Styling for Print */
+            #proposal-preview .grid,
+            #proposal-preview h2,
+            #proposal-preview p,
+            #proposal-preview table,
+            #proposal-preview .text-right,
+            #proposal-preview .text-center,
+            #proposal-preview > div {
+                position: relative !important; 
+                z-index: 1 !important;
+                page-break-inside: avoid !important;
+            }
+            
+            #proposal-preview table, 
+            #proposal-preview tr {
+                page-break-inside: avoid !important;
+            }
+
+            #proposal-preview .text-gray-800 { color: black !important; }
+            #proposal-preview .text-gray-600 { color: #333 !important; }
+            
+            /* === Border එක අයින් කරපු නිසා මේක ඕන නෑ, ඒත් තිබ්බට අවුලක් නෑ === */
+            #proposal-preview .border { border-width: 0.5pt !important; border-color: #ccc !important; }
+            
+            #proposal-preview th, #proposal-preview td {
+                 border: 0.5pt solid #ccc !important; color: black !important;
+                 padding: 0.1mm 2mm !important; 
+                 font-size: 8pt !important; 
+                 word-break: break-word;
+            }
+            
+            #proposal-preview th { background-color: #eee !important; font-weight: bold; }
+            
+            #proposal-preview h2 { 
+                font-size: 10pt !important; 
+                margin-top: 1mm !important; 
+                margin-bottom: 1mm !important; 
+            }
+            #proposal-preview p, #proposal-preview div, #proposal-preview span { 
+                font-size: 8pt !important; 
+                line-height: 1.1 !important; 
+            }
+            
+            #proposal-preview .text-xs { font-size: 7pt !important; }
+            #proposal-preview .text-blue-700 { color: #0056b3 !important; }
+            #proposal-preview strong { font-weight: bold !important;}
+            #proposal-preview .bg-opacity-85, #proposal-preview .bg-opacity-90 { background-color: transparent !important; }
+            
+            #proposal-preview > div { 
+                margin-bottom: 1mm !important; 
+            }
+            #proposal-preview table { 
+                margin-bottom: 1mm !important; 
+            }
+            #proposal-preview .grid { 
+                gap: 1mm !important; 
+            }
+            #proposal-preview .text-center.text-xs {
+                padding-top: 1mm !important; 
+            }
+        }
+        
+        .form-select-xs {
+            width: 85px; 
+            font-size: 0.75rem; 
+            padding: 0.25rem 0.5rem; 
+            border-radius: 0.25rem; 
+            background-color: #334155; 
+            border: 1px solid #475569; 
+            color: #f1f5f9; 
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-300 font-sans">
+
+    <div id="app-container" class="flex h-screen hidden">
+
+        <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between no-print">
+            <div>
+                <div class="flex items-center gap-3 mb-10">
+                    <div class="bg-blue-600 p-2 rounded-lg"><i data-lucide="building-2" class="text-white"></i></div>
+                    <h1 class="text-xl font-bold text-white">Property MS</h1>
+                </div>
+              <nav class="flex flex-col gap-2">
+                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
+                    <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
+                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
+                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
+                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="siren"></i><span>Income/Expenses</span></a>
+                   <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="boxes"></i><span>Materials Stock</span></a>
+                   <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="car"></i><span>Vehicles</span></a>
+                   <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Schedule</span></a>
+                   <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-check-2"></i><span>Agreements</span></a>
+                   <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
+                   <a href="./agreement_generator.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
+
+                </nav>
+            </div>
+            <div>
+                 <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2 mb-4 rounded-lg transition bg-slate-700 hover:bg-red-600 text-white"><i data-lucide="log-out"></i><span>Sign Out</span></button>
+                <div class="text-xs text-slate-500">
+                    <p>&copy; 2025 Property MS. All rights reserved.</p>
+                    <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-8 overflow-y-auto flex flex-col lg:flex-row gap-8">
+
+            <section id="generator-form" class="lg:w-1/3 flex-shrink-0 no-print">
+                 <h2 class="text-2xl font-bold text-white mb-6">Proposal Details</h2>
+                 <div class="space-y-4 bg-slate-800 p-6 rounded-lg">
+                     <h3 class="text-lg font-semibold text-white border-b border-slate-700 pb-2 mb-4">Client Information</h3>
+                     <div><label for="clientName" class="block text-sm font-medium mb-1">Cliente</label><input type="text" id="clientName" value="SCRIGNO" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-sm"></div>
+                     <div><label for="proposalDate" class="block text-sm font-medium mb-1">Data</label><input type="date" id="proposalDate" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-sm"></div>
+                     <div><label for="clientAddress" class="block text-sm font-medium mb-1">Via</label><input type="text" id="clientAddress" value="Via Montresor 15 Bussolengo VR" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-sm"></div>
+                     <div><label for="clientTaxCode" class="block text-sm font-medium mb-1">Codice Fiscale</label><input type="text" id="clientTaxCode" value="93157600235" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-sm"></div>
+                     <div><label for="clientTel" class="block text-sm font-medium mb-1">Tel</label><input type="text" id="clientTel" value="3476101399" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-sm"></div>
+
+                     <h3 class="text-lg font-semibold text-white border-b border-slate-700 pb-2 mb-4 pt-4">Services</h3>
+                     <div class="space-y-2 text-sm max-h-60 overflow-y-auto pr-2">
+                         <div class="flex items-center justify-between gap-2"><label for="freq-service1" class="text-slate-300">Scale e pianerottoli</label><select id="freq-service1" data-service="Pulizia e lavaggio delle scale e pianerottoli" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
+                         <div class="flex items-center justify-between gap-2"><label for="freq-service2" class="text-slate-300">Ascensore</label><select id="freq-service2" data-service="Pulizia e sanificazione dell'ascensore" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
+                         <div class="flex items-center justify-between gap-2"><label for="freq-service3" class="text-slate-300">Androni e ingresso</label><select id="freq-service3" data-service="Pulizia degli androni e dell'ingresso" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
+                         <div class="flex items-center justify-between gap-2"><label for="freq-service4" class="text-slate-300">Superfici comuni</label><select id="freq-service4" data-service="Spolveratura e detersione delle superfici comuni" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
+                         <div class="flex items-center justify-between gap-2"><label for="freq-service5" class="text-slate-300">Rimozione ragnatele</label><select id="freq-service5" data-service="Rimozione ragnatele nelle aree comuni" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
+                         <div class="flex items-center justify-between gap-2"><label for="freq-service6" class="text-slate-300">Vetrate e portoni</label><select id="freq-service6" data-service="Pulizia delle vetrate e portoni d'ingresso" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
+                         <div class="flex items-center justify-between gap-2"><label for="freq-service7" class="text-slate-300">Raccolta rifiuti</label><select id="freq-service7" data-service="Raccolta e smaltimento rifiuti secondo normativa" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
+                         <div class="flex items-center justify-between gap-2"><label for="freq-service8" class="text-slate-300">Cortili e spazi esterni</label><select id="freq-service8" data-service="Pulizia dei cortili e degli spazi esterni (se richiesto)" class="form-select-xs service-frequency-select"><option value="0" selected>N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4">4 Volte</option></select></div>
+                         <div class="flex items-center justify-between gap-2"><label for="freq-service9" class="text-slate-300">Cassette posta</label><select id="freq-service9" data-service="Pulizia delle cassette della posta" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
+                         <div class="flex items-center justify-between gap-2"><label for="freq-service10" class="text-slate-300">Raccolta dépliant</label><select id="freq-service10" data-service="Raccolta dépliant non ritirati" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
+                         <div class="flex items-center justify-between gap-2"><label for="freq-service11" class="text-slate-300">Corridoi cantine</label><select id="freq-service11" data-service="Controllo e scopatura corridoi cantine" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
+                         <div class="flex items-center justify-between gap-2"><label for="freq-service12" class="text-slate-300">Zona garage</label><select id="freq-service12" data-service="Controllo e scopatura zona garage esterno esterna" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
+                     </div>
+
+                     <h3 class="text-lg font-semibold text-white border-b border-slate-700 pb-2 mb-4 pt-4">Pricing</h3>
+                     <div><label for="totalPrice" class="block text-sm font-medium mb-1">Totale Preventivo (€) (IVA esclusa)</label><input type="number" id="totalPrice" step="0.01" value="150" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-sm"></div>
+
+                     <div class="mt-6 flex flex-col sm:flex-row gap-2">
+                         <button type="button" id="printBtn" class="flex-1 bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center justify-center gap-2"><i data-lucide="printer"></i> Print Proposal</button>
+                         <button type="button" id="downloadPdfBtn" class="flex-1 bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2"><i data-lucide="download"></i> Download PDF</button>
+                     </div>
+                 </div>
+            </section>
+
+            <section id="proposal-preview-container" class="lg:w-2/3 flex-grow bg-gray-300 p-4 rounded-lg overflow-auto">
+                 <div id="proposal-preview" class="bg-white text-gray-800 rounded shadow-lg">
+                     <div class="grid grid-cols-2 gap-8 mb-8 relative z-10">
+                        
+                        <div class="p-4 text-sm bg-white bg-opacity-85">
+                             <p><strong>Cliente:</strong> <span id="preview-clientName"></span></p>
+                             <p><strong>Data:</strong> <span id="preview-proposalDate"></span></p>
+                             <p><strong>Via:</strong> <span id="preview-clientAddress"></span></p>
+                             <p><strong>Codice Fiscale:</strong> <span id="preview-clientTaxCode"></span></p>
+                             <p><strong>Tel:</strong> <span id="preview-clientTel"></span></p>
+                         </div>
+                         
+                         <div class="p-4 flex flex-col justify-between bg-white bg-opacity-85">
+                              <p class="text-sm font-semibold text-center mb-2">Timbro e firma per accettazione</p>
+                              <div class="flex-grow"></div>
+                         </div>
+                     </div>
+
+                     <div class="relative z-10">
+                         <h2 class="text-center text-blue-700 font-bold text-lg mb-4 mt-4">PREVENTIVO SERVIZIO DI PULIZIA CONDOMINIALE</h2>
+                         <p class="text-xs text-gray-600 mb-6 text-center leading-relaxed">
+                             RSG Multiservice è un'azienda specializzata nella pulizia di condomini, uffici e strutture ricettive. Offriamo servizi professionali con prodotti di qualità e personale qualificato, garantendo ambienti puliti e sicuri. Affidabilità, puntualità e attenzione ai dettagli sono i nostri punti di forza.
+                         </p>
+                     </div>
+
+                    <div class="relative z-10">
+                        <table class="w-full border-collapse border border-gray-300 text-sm mb-6 bg-white bg-opacity-90">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="border border-gray-300 p-2 text-left font-semibold">Servizi</th>
+                                    <th class="border border-gray-300 p-2 text-center font-semibold w-16">1 Volta</th>
+                                    <th class="border border-gray-300 p-2 text-center font-semibold w-16">2 Volte</th>
+                                    <th class="border border-gray-300 p-2 text-center font-semibold w-16">3 Volte</th>
+                                    <th class="border border-gray-300 p-2 text-center font-semibold w-16">4 Volte</th>
+                                </tr>
+                            <thead>
+                            <tbody id="preview-services-table">
+                                </tbody>
+                        </table>
+                    </div>
+
+                    <div class="text-right font-semibold mb-4 relative z-10">
+                        Totale Preventivo: (<span id="preview-totalPrice">€ 0.00</span>) (IVA esclusa)
+                    </div>
+
+
+                     <div class="text-center text-xs text-gray-600 mb-8 border-t border-gray-300 pt-4 relative z-10">
+                         <p class="font-semibold mb-1">Normativa sui Prodotti Utilizzati</p>
+                         <p>I prodotti impiegati per i nostri interventi di pulizia sono conformi alle normative vigenti in materia di sicurezza, salute e ambiente, inclusi il Regolamento (CE) n. 1272/2008 (CLP) e il D.Lgs. 81/2008, per garantire massima efficacia e rispetto delle normative italiane ed europee.</p>
+                     </div>
+                     
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+             apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc", // (Keep your actual key)
+             authDomain: "rsgweb-5f36d.firebaseapp.com",
+             projectId: "rsgweb-5f36d",
+             storageBucket: "rsgweb-5f36d.firebasestorage.app",
+             messagingSenderId: "633023905515",
+             appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        let currentUserId = null;
+
+        // Get Elements
+        const appContainer = document.getElementById('app-container');
+        const signOutBtn = document.getElementById('signOutBtn');
+        const userIdSpan = document.getElementById('userId');
+        const clientNameInput = document.getElementById('clientName');
+        const proposalDateInput = document.getElementById('proposalDate');
+        const clientAddressInput = document.getElementById('clientAddress');
+        const clientTaxCodeInput = document.getElementById('clientTaxCode');
+        const clientTelInput = document.getElementById('clientTel');
+        const totalPriceInput = document.getElementById('totalPrice');
+        const printBtn = document.getElementById('printBtn');
+        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+        const serviceSelects = document.querySelectorAll('.service-frequency-select');
+        
+        // Preview Elements
+        const previewClientName = document.getElementById('preview-clientName');
+        const previewProposalDate = document.getElementById('preview-proposalDate');
+        const previewClientAddress = document.getElementById('preview-clientAddress');
+        const previewClientTaxCode = document.getElementById('preview-clientTaxCode');
+        const previewClientTel = document.getElementById('preview-clientTel');
+        const previewServicesTable = document.getElementById('preview-services-table');
+        const previewTotalPrice = document.getElementById('preview-totalPrice');
+
+        // Firebase Auth
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                userIdSpan.textContent = currentUserId.substring(0, 10) + '...';
+                appContainer.classList.remove('hidden');
+                setDefaultDate();
+                updatePreview();
+            } else {
+                window.location.href = './index.html'; // Redirect to login
+            }
+        });
+
+        signOutBtn.addEventListener('click', () => {
+            signOut(auth).catch(error => console.error("Sign out failed:", error));
+        });
+
+        // Functions
+        function setDefaultDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            proposalDateInput.value = `${year}-${month}-${day}`;
+        }
+
+        function renderServicesTable() {
+            previewServicesTable.innerHTML = '';
+            let servicesSelected = false;
+
+            serviceSelects.forEach(select => {
+                const serviceName = select.dataset.service;
+                const frequency = select.value;
+
+                if (frequency !== '0') {
+                    servicesSelected = true;
+                    const col1 = (frequency === '1') ? 'X' : '';
+                    const col2 = (frequency === '2') ? 'X' : '';
+                    const col3 = (frequency === '3') ? 'X' : '';
+                    const col4 = (frequency === '4') ? 'X' : '';
+
+                    const row = previewServicesTable.insertRow();
+                    row.innerHTML = `
+                        <td class="border border-gray-300 p-2">${serviceName}</td>
+                        <td class="border border-gray-300 p-2 text-center font-bold">${col1}</td>
+                        <td class="border border-gray-300 p-2 text-center font-bold">${col2}</td>
+                        <td class="border border-gray-300 p-2 text-center font-bold">${col3}</td>
+                        <td class="border border-gray-300 p-2 text-center font-bold">${col4}</td>
+                    `;
+                }
+            });
+
+            if (!servicesSelected) {
+                const row = previewServicesTable.insertRow();
+                row.innerHTML = `<td colspan="5" class="border border-gray-300 p-2 text-center italic">Nessun servizio selezionato.</td>`;
+            }
+        }
+
+        function updatePreview() {
+            previewClientName.textContent = clientNameInput.value || 'N/A';
+            const dateValue = proposalDateInput.value;
+            if (dateValue) {
+                try {
+                    const [year, month, day] = dateValue.split('-');
+                    previewProposalDate.textContent = `${day}/${month}/${year}`;
+                } catch { previewProposalDate.textContent = 'Invalid Date'; }
+            } else { previewProposalDate.textContent = 'N/A'; }
+            previewClientAddress.textContent = clientAddressInput.value || 'N/A';
+            previewClientTaxCode.textContent = clientTaxCodeInput.value || 'N/A';
+            previewClientTel.textContent = clientTelInput.value || 'N/A';
+            
+            renderServicesTable();
+            
+            const price = parseFloat(totalPriceInput.value) || 0;
+            previewTotalPrice.textContent = `€ ${price.toFixed(2)}`;
+        }
+        
+        
+        // ======================================================
+        // === PDF Function (වෙනසක් නෑ) ===
+        // ======================================================
+        function downloadPDF() {
+            console.log('Generating PDF...');
+            
+            var clientName = clientNameInput.value || 'client';
+            var proposalDate = proposalDateInput.value || 'date';
+            var filename = `Proposal - ${clientName.replace(/ /g, '_')} - ${proposalDate}.pdf`;
+            
+            var elementToExport = document.getElementById('proposal-preview');
+
+            var opt = {
+                margin:       0, 
+                filename:     filename,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false }, 
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } 
+            };
+
+            console.log('Waiting 750ms for letterhead.png to render...');
+            
+            setTimeout(() => {
+                console.log('PDF generation process starting...');
+                html2pdf().from(elementToExport).set(opt).save().then(() => {
+                    console.log('PDF saved.');
+                }).catch((err) => {
+                    console.error('PDF generation failed:', err);
+                });
+            }, 750); 
+        }
+        // ======================================================
+        // === Function එක ඉවරයි ===
+        // ======================================================
+
+
+        // Event Listeners
+        clientNameInput.addEventListener('input', updatePreview);
+        proposalDateInput.addEventListener('input', updatePreview);
+        clientAddressInput.addEventListener('input', updatePreview);
+        clientTaxCodeInput.addEventListener('input', updatePreview);
+        clientTelInput.addEventListener('input', updatePreview);
+        totalPriceInput.addEventListener('input', updatePreview);
+        
+        serviceSelects.forEach(select => select.addEventListener('change', updatePreview));
+        
+        printBtn.addEventListener('click', () => window.print());
+        
+        downloadPdfBtn.addEventListener('click', downloadPDF);
+
+        // Initial Load
+        lucide.createIcons();
+        setDefaultDate();
+        updatePreview();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Access - Property MS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Modal transition */
+        .modal-content {
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-300 font-sans">
+
+    <div id="app-container" class="flex h-screen hidden">
+        <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center gap-3 mb-10">
+                    <div class="bg-blue-600 p-2 rounded-lg">
+                        <i data-lucide="building-2" class="text-white"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-white">Property MS</h1>
+                </div>
+             <nav class="flex flex-col gap-2">
+                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
+                    <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
+                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
+                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
+                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="siren"></i><span>Income/Expenses</span></a>
+                   <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="boxes"></i><span>Materials Stock</span></a>
+                   <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="car"></i><span>Vehicles</span></a>
+                   <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Schedule</span></a>
+                   <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-check-2"></i><span>Agreements</span></a>
+                   <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
+                   <a href="./agreement_generator.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
+
+                </nav>
+            </div>
+            <div>
+                 <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2 mb-4 rounded-lg transition bg-slate-700 hover:bg-red-600 text-white">
+                    <i data-lucide="log-out"></i><span>Sign Out</span>
+                </button>
+                <div class="text-xs text-slate-500">
+                    <p>&copy; 2025 Property MS. All rights reserved.</p>
+                    <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-8 overflow-y-auto">
+            <section id="page-app-access" class="page">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-white">App Access Management</h2>
+                    <button id="addOtherAccessBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2">
+                        <i data-lucide="plus"></i> Add Other Access
+                    </button>
+                </div>
+
+                <div class="mb-6 border-b border-slate-700">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button id="tabStaffAccess" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-blue-400 border-blue-400">
+                            Staff Access
+                        </button>
+                        <button id="tabOtherAccess" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-slate-400 border-transparent hover:text-slate-300 hover:border-slate-300">
+                            Other Access (Owners/Managers)
+                        </button>
+                    </nav>
+                </div>
+
+                <div id="staffAccessContent">
+                    <div id="staffFiltersDiv" class="bg-slate-800 rounded-lg p-4 mb-6 flex items-end gap-4">
+                         <div class="flex-1">
+                            <label for="searchByName" class="block mb-2 text-sm font-medium">Search by Name</label>
+                            <input type="text" id="searchByName" placeholder="Enter staff name..." class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                        </div>
+                        <div class="flex-1">
+                            <label for="filterCategory" class="block mb-2 text-sm font-medium">Filter by Category</label>
+                            <select id="filterCategory" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                                <option value="">All Categories</option>
+                                 <option value="condumini">Condominium</option>
+                                <option value="hotel_b&b">Hotel B&B</option>
+                                <option value="gardners">Gardners</option>
+                                <option value="staff">Staff</option>
+                                <option value="agency">Agency</option>
+                                <option value="gym">Gym</option>
+                                <option value="laundry">Laundry</option>
+                                <option value="others">Others</option>
+                            </select>
+                        </div>
+                         <div class="flex-1">
+                            <label for="filterRole" class="block mb-2 text-sm font-medium">Filter by Role</label>
+                            <select id="filterRole" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" disabled>
+                                <option value="">All Roles</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button id="clearFiltersBtn" class="bg-slate-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-slate-500 transition">Clear</button>
+                        </div>
+                    </div>
+                    <div id="staffTableDiv" class="bg-slate-800 rounded-lg overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-700">
+                                <tr>
+                                    <th class="p-4 font-semibold text-white">Photo</th>
+                                    <th class="p-4 font-semibold text-white">Name</th>
+                                    <th class="p-4 font-semibold text-white">Role</th>
+                                    <th class="p-4 font-semibold text-white">Assigned App Email</th>
+                                    <th class="p-4 font-semibold text-white">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accessTableBody">
+                                <tr><td colspan="5" class="text-center p-8 text-slate-400">Loading staff data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="otherAccessContent" class="hidden">
+                    <div class="bg-slate-800 rounded-lg p-4 mb-6 flex items-end gap-4">
+                        <div class="flex-1">
+                           <label for="searchOtherByName" class="block mb-2 text-sm font-medium">Search by Name</label>
+                           <input type="text" id="searchOtherByName" placeholder="Enter name..." class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                       </div>
+                       <div class="flex-1">
+                           <label for="filterOtherUserType" class="block mb-2 text-sm font-medium">Filter by User Type</label>
+                           <select id="filterOtherUserType" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                               <option value="">All Types</option>
+                               <option value="Flat Owner">Flat Owner</option>
+                               <option value="Condominium Manager">Condominium Manager</option>
+                           </select>
+                       </div>
+                       <div>
+                           <button id="clearOtherFiltersBtn" class="bg-slate-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-slate-500 transition">Clear</a:role="button">
+                       </div>
+                   </div>
+                   <div class="bg-slate-800 rounded-lg overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-700">
+                                <tr>
+                                    <th class="p-4 font-semibold text-white">Name</th>
+                                    <th class="p-4 font-semibold text-white">User Type</th>
+                                    <th class="p-4 font-semibold text-white">Assigned App Email</th>
+                                    <th class="p-4 font-semibold text-white">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="otherAccessTableBody">
+                                <tr><td colspan="4" class="text-center p-8 text-slate-400">Loading other access data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="appAccessModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+        <div class="bg-slate-800 rounded-lg p-8 w-full max-w-lg transform transition-all modal-content scale-95 opacity-0" id="app-access-modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-white">Manage Staff App Access</h3>
+                <button id="closeAppAccessModalBtn" class="text-slate-400 hover:text-white">&times;</button>
+            </div>
+            <form id="appAccessForm">
+                <input type="hidden" id="accessStaffDocId">
+                <p class="mb-4">Assign credentials for: <strong id="accessStaffName" class="text-white"></strong></p>
+                <div class="mb-4">
+                    <label for="appEmail" class="block mb-2 text-sm font-medium">App Email</label>
+                    <input type="email" id="appEmail" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500" placeholder="staff.member@yourapp.com">
+                </div>
+                <div class="mb-6">
+                    <label for="appPassword" class="block mb-2 text-sm font-medium">App Password</label>
+                    <input type="text" id="appPassword" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" placeholder="Enter a secure password">
+                </div>
+                <div class="flex justify-end gap-4 mt-8">
+                    <button type="button" id="cancelAppAccessModalBtn" class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-700">Cancel</button>
+                    <button type="submit" id="submitAppAccessBtn" class="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 font-semibold flex items-center">
+                        <span id="submitAppAccessBtnText">Save Credentials</span>
+                        <div id="submitAppAccessSpinner" class="loader w-5 h-5 ml-2 hidden"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="otherAccessModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+        <div class="bg-slate-800 rounded-lg p-8 w-full max-w-lg transform transition-all modal-content scale-95 opacity-0" id="other-access-modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="otherAccessModalTitle" class="text-2xl font-bold text-white">Add Other App Access</h3>
+                <button id="closeOtherAccessModalBtn" class="text-slate-400 hover:text-white">&times;</button>
+            </div>
+            <form id="otherAccessForm">
+                <input type="hidden" id="otherAccessDocId">
+                <div class="mb-4">
+                    <label for="otherUserType" class="block mb-2 text-sm font-medium">User Type</label>
+                    <select id="otherUserType" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" required>
+                        <option value="">Select type...</option>
+                        <option value="Flat Owner">Flat Owner</option>
+                        <option value="Condominium Manager">Condominium Manager</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="otherUserName" class="block mb-2 text-sm font-medium">Name (e.g., John Doe - Flat A1)</label>
+                    <input type="text" id="otherUserName" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" placeholder="Name or Identifier" required>
+                </div>
+                <div class="mb-4">
+                    <label for="otherAppEmail" class="block mb-2 text-sm font-medium">App Email</label>
+                    <input type="email" id="otherAppEmail" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" placeholder="owner@yourapp.com" required>
+                </div>
+                <div class="mb-6">
+                    <label for="otherAppPassword" class="block mb-2 text-sm font-medium">App Password</label>
+                    <input type="text" id="otherAppPassword" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" placeholder="Enter a secure password" required>
+                </div>
+                <div class="flex justify-end gap-4 mt-8">
+                    <button type="button" id="cancelOtherAccessModalBtn" class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-700">Cancel</button>
+                    <button type="submit" id="submitOtherAccessBtn" class="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 font-semibold flex items-center">
+                        <span id="submitOtherAccessBtnText">Save Access</span>
+                        <div id="submitOtherAccessSpinner" class="loader w-5 h-5 ml-2 hidden"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-10 right-10 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300">
+        <p>Toast message!</p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, getDoc, updateDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc",
+            authDomain: "rsgweb-5f36d.firebaseapp.com",
+            projectId: "rsgweb-5f36d",
+            storageBucket: "rsgweb-5f36d.firebasestorage.app",
+            messagingSenderId: "633023905515",
+            appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        let currentUserId = null;
+        let allStaff = [];
+        let allOtherAccess = []; // *** ALUTH VARIABLE EKA (FILTERING WALATA) ***
+
+        const appContainer = document.getElementById('app-container');
+        const signOutBtn = document.getElementById('signOutBtn');
+        const userIdSpan = document.getElementById('userId');
+        const toast = document.getElementById('toast');
+        const accessTableBody = document.getElementById('accessTableBody');
+        const searchByNameInput = document.getElementById('searchByName');
+        const filterCategorySelect = document.getElementById('filterCategory');
+        const filterRoleSelect = document.getElementById('filterRole');
+        const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+
+        // Staff Access Modal Elements
+        const appAccessModal = document.getElementById('appAccessModal');
+        const appAccessModalContent = document.getElementById('app-access-modal-content');
+        const closeAppAccessModalBtn = document.getElementById('closeAppAccessModalBtn');
+        const cancelAppAccessModalBtn = document.getElementById('cancelAppAccessModalBtn');
+        const appAccessForm = document.getElementById('appAccessForm');
+        const accessStaffName = document.getElementById('accessStaffName');
+        const submitAppAccessBtn = document.getElementById('submitAppAccessBtn');
+        const submitAppAccessBtnText = document.getElementById('submitAppAccessBtnText');
+        const submitAppAccessSpinner = document.getElementById('submitAppAccessSpinner');
+        
+        // Other Access Elements
+        const addOtherAccessBtn = document.getElementById('addOtherAccessBtn');
+        const otherAccessModal = document.getElementById('otherAccessModal');
+        const otherAccessModalContent = document.getElementById('other-access-modal-content');
+        const otherAccessModalTitle = document.getElementById('otherAccessModalTitle');
+        const closeOtherAccessModalBtn = document.getElementById('closeOtherAccessModalBtn');
+        const cancelOtherAccessModalBtn = document.getElementById('cancelOtherAccessModalBtn');
+        const otherAccessForm = document.getElementById('otherAccessForm');
+        const submitOtherAccessBtn = document.getElementById('submitOtherAccessBtn');
+        const submitOtherAccessBtnText = document.getElementById('submitOtherAccessBtnText');
+        const submitOtherAccessSpinner = document.getElementById('submitOtherAccessSpinner');
+        const otherAccessTableBody = document.getElementById('otherAccessTableBody');
+        
+        // Tab Elements
+        const tabStaffAccess = document.getElementById('tabStaffAccess');
+        const tabOtherAccess = document.getElementById('tabOtherAccess');
+        const staffAccessContent = document.getElementById('staffAccessContent');
+        const otherAccessContent = document.getElementById('otherAccessContent');
+        
+        // *** ALUTH FILTER ELEMENTS ***
+        const searchOtherByNameInput = document.getElementById('searchOtherByName');
+        const filterOtherUserTypeSelect = document.getElementById('filterOtherUserType');
+        const clearOtherFiltersBtn = document.getElementById('clearOtherFiltersBtn');
+
+        const rolesByCategory = {
+            condumini: ['Manager', 'Security', 'Cleaner', 'Technician', 'Front Desk'],
+            'hotel_b&b': ['Manager', 'Receptionist', 'Housekeeping', 'Chef', 'Waiter'],
+            gardners: ['Head Gardner', 'Gardner', 'Landscaper'],
+            staff: ['Office Manager', 'Admin Assistant', 'Accountant'],
+            agency: ['Agent', 'Consultant', 'Recruiter'],
+            gym: ['Instructor', 'Personal Trainer', 'Receptionist'],
+            laundry: ['Laundry Worker', 'Presser', 'Driver'],
+            others: ['General Worker', 'Specialist']
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                userIdSpan.textContent = currentUserId.substring(0, 10) + '...';
+                appContainer.classList.remove('hidden');
+                listenForStaffAccessUpdates();
+                listenForOtherAccessUpdates();
+            } else {
+                window.location.href = './index.html';
+            }
+        });
+
+        signOutBtn.addEventListener('click', () => {
+            signOut(auth).catch(error => console.error("Sign out failed:", error));
+        });
+
+        const showToast = (message, isSuccess = true) => {
+            toast.textContent = message;
+            toast.className = `fixed bottom-10 right-10 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+        };
+
+        // --- Staff Access Modal Logic ---
+        const openAppAccessModal = async (docId) => {
+            try {
+                const docRef = doc(db, `users/${currentUserId}/staff`, docId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const staff = docSnap.data();
+                    document.getElementById('accessStaffDocId').value = docId;
+                    accessStaffName.textContent = staff.name;
+                    document.getElementById('appEmail').value = staff.appEmail || '';
+                    document.getElementById('appPassword').value = staff.appPassword || '';
+                    appAccessModal.classList.remove('hidden');
+                    setTimeout(() => appAccessModalContent.classList.remove('scale-95', 'opacity-0'), 10);
+                } else {
+                    showToast("Staff member not found.", false);
+                }
+            } catch (error) {
+                showToast(`Error fetching data: ${error.message}`, false);
+            }
+        };
+
+        const closeAppAccessModal = () => {
+            appAccessModalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                appAccessModal.classList.add('hidden');
+                appAccessForm.reset();
+            }, 200);
+        };
+
+        closeAppAccessModalBtn.addEventListener('click', closeAppAccessModal);
+        cancelAppAccessModalBtn.addEventListener('click', closeAppAccessModal);
+        appAccessModal.addEventListener('click', (e) => { if (e.target === appAccessModal) closeAppAccessModal(); });
+
+        appAccessForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUserId) return showToast("Authentication error.", false);
+
+            const docId = document.getElementById('accessStaffDocId').value;
+            submitAppAccessBtn.disabled = true;
+            submitAppAccessBtnText.classList.add('hidden');
+            submitAppAccessSpinner.classList.remove('hidden');
+            
+            try {
+                const dataToUpdate = {
+                    appEmail: document.getElementById('appEmail').value,
+                    appPassword: document.getElementById('appPassword').value
+                };
+                await updateDoc(doc(db, `users/${currentUserId}/staff`, docId), dataToUpdate);
+                showToast('Credentials updated successfully!');
+                closeAppAccessModal();
+            } catch (error) {
+                showToast(`Error: ${error.message}`, false);
+            } finally {
+                submitAppAccessBtn.disabled = false;
+                submitAppAccessBtnText.classList.remove('hidden');
+                submitAppAccessSpinner.classList.add('hidden');
+            }
+        });
+        
+        // --- Staff Table Render ---
+        function renderAccessTable(staffList) {
+             accessTableBody.innerHTML = '';
+             if (staffList.length === 0) {
+                 accessTableBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">No staff members found matching the criteria.</td></tr>`;
+                 return;
+             }
+             staffList.forEach((staff) => {
+                 const row = accessTableBody.insertRow();
+                 row.className = "border-b border-slate-700 hover:bg-slate-700/50 align-middle";
+                 row.innerHTML = `
+                     <td class="p-2"><img src="${staff.profilePhotoUrl || 'https://placehold.co/40x40/334155/94a3b8?text=?'}" class="w-10 h-10 rounded-full object-cover"></td>
+                     <td class="p-4">${staff.name}</td>
+                     <td class="p-4">${staff.role}</td>
+                     <td class="p-4 font-mono text-sm">${staff.appEmail || '<span class="text-slate-500">Not Assigned</span>'}</td>
+                     <td class="p-4">
+                        <button data-id="${staff.id}" class="manage-access-btn bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg flex items-center gap-2">
+                           <i data-lucide="key-round" class="w-4 h-4"></i> Manage
+                        </button>
+                     </td>
+                 `;
+             });
+             lucide.createIcons();
+        }
+
+        const listenForStaffAccessUpdates = () => {
+            if (!currentUserId) return;
+            onSnapshot(collection(db, `users/${currentUserId}/staff`), (snapshot) => {
+                allStaff = [];
+                snapshot.forEach((doc) => {
+                    allStaff.push({id: doc.id, ...doc.data()});
+                });
+                applyFilters();
+            });
+        };
+
+        // --- Staff Filter Logic ---
+        const populateRoles = (category, roleSelectElement) => {
+            const roles = rolesByCategory[category] || [];
+            roleSelectElement.innerHTML = '<option value="">All Roles</option>';
+            roles.forEach(role => {
+                const option = document.createElement('option');
+                option.value = role;
+                option.textContent = role;
+                roleSelectElement.appendChild(option);
+            });
+            roleSelectElement.disabled = roles.length === 0 && !category;
+        };
+        
+        filterCategorySelect.addEventListener('change', (e) => {
+            populateRoles(e.target.value, filterRoleSelect);
+            applyFilters();
+        });
+
+        function applyFilters() {
+            const category = filterCategorySelect.value;
+            const role = filterRoleSelect.value;
+            const searchTerm = searchByNameInput.value.toLowerCase();
+            
+            let filteredStaff = allStaff;
+
+            if (searchTerm) {
+                filteredStaff = filteredStaff.filter(staff => staff.name.toLowerCase().includes(searchTerm));
+            }
+            if (category) {
+                filteredStaff = filteredStaff.filter(staff => staff.category === category);
+            }
+            if (role) {
+                filteredStaff = filteredStaff.filter(staff => staff.role === role);
+            }
+            
+            renderAccessTable(filteredStaff);
+        }
+
+        filterRoleSelect.addEventListener('change', applyFilters);
+        searchByNameInput.addEventListener('input', applyFilters);
+        
+        clearFiltersBtn.addEventListener('click', () => {
+            filterCategorySelect.value = '';
+            searchByNameInput.value = '';
+            populateRoles('', filterRoleSelect);
+            applyFilters();
+        });
+        
+        accessTableBody.addEventListener('click', (e) => {
+            const manageBtn = e.target.closest('.manage-access-btn');
+            if (manageBtn && currentUserId) {
+                const docId = manageBtn.dataset.id;
+                openAppAccessModal(docId);
+            }
+        });
+
+        // --- *** ALUTH LOGIC EKA (Other Access) *** ---
+
+        // 1. Tab Click Handlers
+        tabStaffAccess.addEventListener('click', () => {
+            staffAccessContent.classList.remove('hidden');
+            otherAccessContent.classList.add('hidden');
+            
+            tabStaffAccess.classList.add('text-blue-400', 'border-blue-400');
+            tabOtherAccess.classList.remove('text-blue-400', 'border-blue-400');
+            tabOtherAccess.classList.add('text-slate-400', 'border-transparent');
+        });
+        
+        tabOtherAccess.addEventListener('click', () => {
+            staffAccessContent.classList.add('hidden');
+            otherAccessContent.classList.remove('hidden');
+
+            tabOtherAccess.classList.add('text-blue-400', 'border-blue-400');
+            tabStaffAccess.classList.remove('text-blue-400', 'border-blue-400');
+            tabStaffAccess.classList.add('text-slate-400', 'border-transparent');
+        });
+
+        // 2. Other Access Modal Logic
+        const openOtherAccessModal = async (docId = null) => {
+            otherAccessForm.reset();
+            document.getElementById('otherAccessDocId').value = docId || '';
+            
+            if(docId) {
+                otherAccessModalTitle.textContent = "Edit Other Access";
+                submitOtherAccessBtnText.textContent = "Update Access";
+                try {
+                    const docRef = doc(db, `users/${currentUserId}/app_access`, docId);
+                    const docSnap = await getDoc(docRef);
+                    if(docSnap.exists()) {
+                        const data = docSnap.data();
+                        document.getElementById('otherUserType').value = data.userType;
+                        document.getElementById('otherUserName').value = data.name;
+                        document.getElementById('otherAppEmail').value = data.email;
+                        document.getElementById('otherAppPassword').value = data.password;
+                    }
+                } catch (error) {
+                    showToast("Error loading data.", false);
+                    return;
+                }
+            } else {
+                otherAccessModalTitle.textContent = "Add Other App Access";
+                submitOtherAccessBtnText.textContent = "Save Access";
+            }
+            
+            otherAccessModal.classList.remove('hidden');
+            setTimeout(() => otherAccessModalContent.classList.remove('scale-95', 'opacity-0'), 10);
+        };
+        
+        const closeOtherAccessModal = () => {
+            otherAccessModalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                otherAccessModal.classList.add('hidden');
+                otherAccessForm.reset();
+            }, 200);
+        };
+
+        addOtherAccessBtn.addEventListener('click', () => openOtherAccessModal());
+        closeOtherAccessModalBtn.addEventListener('click', closeOtherAccessModal);
+        cancelOtherAccessModalBtn.addEventListener('click', closeOtherAccessModal);
+        otherAccessModal.addEventListener('click', (e) => { if (e.target === otherAccessModal) closeOtherAccessModal(); });
+
+        // 3. Other Access Form Submit
+        otherAccessForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUserId) return showToast("Authentication error.", false);
+
+            const docId = document.getElementById('otherAccessDocId').value;
+            submitOtherAccessBtn.disabled = true;
+            submitOtherAccessBtnText.classList.add('hidden');
+            submitOtherAccessSpinner.classList.remove('hidden');
+            
+            const dataToSave = {
+                userType: document.getElementById('otherUserType').value,
+                name: document.getElementById('otherUserName').value,
+                email: document.getElementById('otherAppEmail').value,
+                password: document.getElementById('otherAppPassword').value
+            };
+            
+            try {
+                if(docId) {
+                    await updateDoc(doc(db, `users/${currentUserId}/app_access`, docId), dataToSave);
+                    showToast('Access updated successfully!');
+                } else {
+                    dataToSave.createdAt = new Date();
+                    await addDoc(collection(db, `users/${currentUserId}/app_access`), dataToSave);
+                    showToast('Access added successfully!');
+                }
+                closeOtherAccessModal();
+            } catch (error) {
+                showToast(`Error: ${error.message}`, false);
+            } finally {
+                submitOtherAccessBtn.disabled = false;
+                submitOtherAccessBtnText.classList.remove('hidden');
+                submitOtherAccessSpinner.classList.add('hidden');
+            }
+        });
+
+        // 4. Other Access Table Render
+        function renderOtherAccessTable(accessList) {
+            otherAccessTableBody.innerHTML = '';
+             if (accessList.length === 0) {
+                 otherAccessTableBody.innerHTML = `<tr><td colspan="4" class="text-center p-8 text-slate-400">No accounts found matching the criteria.</td></tr>`;
+                 return;
+             }
+             accessList.forEach((acc) => {
+                 const row = otherAccessTableBody.insertRow();
+                 row.className = "border-b border-slate-700 hover:bg-slate-700/50 align-middle";
+                 row.innerHTML = `
+                     <td class="p-4">${acc.name}</td>
+                     <td class="p-4">${acc.userType}</td>
+                     <td class="p-4 font-mono text-sm">${acc.email}</td>
+                     <td class="p-4 flex gap-2">
+                        <button data-id="${acc.id}" class="edit-other-btn text-blue-400 hover:text-blue-300"><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
+                        <button data-id="${acc.id}" class="delete-other-btn text-red-400 hover:text-red-300"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
+                     </td>
+                 `;
+             });
+             lucide.createIcons();
+        }
+
+        // 5. Other Access Data Listener
+        const listenForOtherAccessUpdates = () => {
+            if (!currentUserId) return;
+            onSnapshot(collection(db, `users/${currentUserId}/app_access`), (snapshot) => {
+                allOtherAccess = []; // *** DATA EKA GLOBAL VARIABLE EKATA DANAWA ***
+                snapshot.forEach((doc) => {
+                    allOtherAccess.push({id: doc.id, ...doc.data()});
+                });
+                applyOtherFilters(); // *** RENDER KARANNE FILTER FUNCTION EKEN ***
+            });
+        };
+        
+        // 6. Other Access Table Click Logic
+        otherAccessTableBody.addEventListener('click', async (e) => {
+            const editBtn = e.target.closest('.edit-other-btn');
+            if (editBtn) {
+                const docId = editBtn.dataset.id;
+                openOtherAccessModal(docId);
+                return;
+            }
+            
+            const deleteBtn = e.target.closest('.delete-other-btn');
+            if (deleteBtn) {
+                const docId = deleteBtn.dataset.id;
+                if(confirm('Are you sure you want to delete this access account?')) {
+                    try {
+                        await deleteDoc(doc(db, `users/${currentUserId}/app_access`, docId));
+                        showToast("Access account deleted.");
+                    } catch (error) {
+                        showToast(`Error: ${error.message}`, false);
+                    }
+                }
+                return;
+            }
+        });
+
+        // 7. *** ALUTH FILTER FUNCTION EKA ***
+        function applyOtherFilters() {
+            const userType = filterOtherUserTypeSelect.value;
+            const searchTerm = searchOtherByNameInput.value.toLowerCase();
+            
+            let filteredAccess = allOtherAccess;
+
+            if (searchTerm) {
+                filteredAccess = filteredAccess.filter(acc => acc.name.toLowerCase().includes(searchTerm));
+            }
+            if (userType) {
+                filteredAccess = filteredAccess.filter(acc => acc.userType === userType);
+            }
+            
+            renderOtherAccessTable(filteredAccess);
+        }
+
+        // 8. *** ALUTH FILTER EVENT LISTENERS ***
+        searchOtherByNameInput.addEventListener('input', applyOtherFilters);
+        filterOtherUserTypeSelect.addEventListener('change', applyOtherFilters);
+        clearOtherFiltersBtn.addEventListener('click', () => {
+            searchOtherByNameInput.value = '';
+            filterOtherUserTypeSelect.value = '';
+            applyOtherFilters();
+        });
+
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>

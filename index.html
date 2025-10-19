@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Property MS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom scrollbar for a better look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-300 font-sans">
+
+    <div id="app-container" class="flex h-screen hidden">
+        
+        <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center gap-3 mb-10">
+                    <div class="bg-blue-600 p-2 rounded-lg">
+                        <i data-lucide="building-2" class="text-white"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-white">Property MS</h1>
+                </div>
+          <nav class="flex flex-col gap-2">
+                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
+                    <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
+                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
+                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
+                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="siren"></i><span>Income/Expenses</span></a>
+                   <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="boxes"></i><span>Materials Stock</span></a>
+                   <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="car"></i><span>Vehicles</span></a>
+                   <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Schedule</span></a>
+                   <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-check-2"></i><span>Agreements</span></a>
+                   <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
+                   <a href="./agreement_generator.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
+
+                </nav>
+            </div>
+            <div>
+                 <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2 mb-4 rounded-lg transition bg-slate-700 hover:bg-red-600 text-white">
+                    <i data-lucide="log-out"></i><span>Sign Out</span>
+                </button>
+                <div class="text-xs text-slate-500">
+                    <p>&copy; 2025 Property MS. All rights reserved.</p>
+                    <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-8 overflow-y-auto">
+            <section id="page-dashboard" class="page">
+                <h2 class="text-3xl font-bold text-white mb-6">Dashboard</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                    <div class="bg-slate-800 p-6 rounded-lg shadow-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-slate-400">Total Staff</p>
+                                <p id="staff-count" class="text-3xl font-bold text-white">Loading...</p>
+                            </div>
+                            <div class="bg-blue-600 p-3 rounded-full">
+                                <i data-lucide="users" class="text-white w-6 h-6"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800 p-6 rounded-lg shadow-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-slate-400">Total Customers</p>
+                                <p id="customer-count" class="text-3xl font-bold text-white">Loading...</p>
+                            </div>
+                            <div class="bg-teal-600 p-3 rounded-full">
+                                <i data-lucide="contact" class="text-white w-6 h-6"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800 p-6 rounded-lg shadow-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-slate-400">Pending Issues</p>
+                                <p id="issue-count" class="text-3xl font-bold text-white">0</p>
+                            </div>
+                            <div class="bg-red-600 p-3 rounded-full">
+                                <i data-lucide="shield-alert" class="text-white w-6 h-6"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800 p-6 rounded-lg shadow-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-slate-400">This Month's Income</p>
+                                <p id="income-count" class="text-3xl font-bold text-white">Rs 0.00</p>
+                            </div>
+                            <div class="bg-green-600 p-3 rounded-full">
+                                <i data-lucide="dollar-sign" class="text-white w-6 h-6"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-slate-800 p-6 rounded-lg shadow-lg lg:col-span-1">
+                        <h3 class="text-xl font-semibold text-white mb-4">Recent Activity</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-center gap-3">
+                                <div class="p-2 bg-slate-700 rounded-full">
+                                    <i data-lucide="user-plus" class="w-4 h-4 text-green-400"></i>
+                                </div>
+                                <p class="text-sm">New staff member "John Doe" added.</p>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <div class="p-2 bg-slate-700 rounded-full">
+                                    <i data-lucide="contact-plus" class="w-4 h-4 text-blue-400"></i>
+                                </div>
+                                <p class="text-sm">New customer "Jane Smith" registered.</p>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <div class="p-2 bg-slate-700 rounded-full">
+                                    <i data-lucide="shield-alert" class="w-4 h-4 text-red-400"></i>
+                                </div>
+                                <p class="text-sm">Issue reported for Unit 101.</p>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-slate-800 p-6 rounded-lg shadow-lg lg:col-span-2">
+                        <h3 class="text-xl font-semibold text-white mb-4">Quick Links</h3>
+                        <div class="flex flex-wrap gap-4">
+                            <a href="./staff.html" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg font-semibold transition flex items-center gap-2">
+                                <i data-lucide="plus"></i> Add New Staff
+                            </a>
+                            <a href="./customers.html" class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-lg font-semibold transition flex items-center gap-2">
+                                <i data-lucide="plus"></i> Add New Customer
+                            </a>
+                             <a href="#" class="bg-slate-600 hover:bg-slate-500 text-white px-5 py-3 rounded-lg font-semibold transition flex items-center gap-2">
+                                <i data-lucide="file-text"></i> View Reports
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <div id="toast" class="fixed bottom-10 right-10 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300">
+        <p>Toast message!</p>
+    </div>
+
+    <script type="module">
+        // Firebase and other imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+
+        // IMPORTANT: Replace with your actual Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc",
+            authDomain: "rsgweb-5f36d.firebaseapp.com",
+            projectId: "rsgweb-5f36d",
+            storageBucket: "rsgweb-5f36d.firebasestorage.app",
+            messagingSenderId: "633023905515",
+            appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae",
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        let currentUserId = null;
+        
+        // --- DOM Elements ---
+        const appContainer = document.getElementById('app-container');
+        const signOutBtn = document.getElementById('signOutBtn');
+        const userIdSpan = document.getElementById('userId');
+        
+        // Dashboard Card Elements
+        const staffCountEl = document.getElementById('staff-count');
+        const customerCountEl = document.getElementById('customer-count');
+        // Add other card elements here if you make them dynamic
+        // const issueCountEl = document.getElementById('issue-count');
+        // const incomeCountEl = document.getElementById('income-count');
+
+        // --- Authentication ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                userIdSpan.textContent = currentUserId.substring(0, 10) + '...';
+                appContainer.classList.remove('hidden');
+                console.log("User is signed in with UID:", currentUserId);
+                
+                // Load dashboard data once user is logged in
+                loadDashboardData();
+            } else {
+                // If user is not logged in, redirect to the main page
+                // !! Change this to your actual login page
+                window.location.href = './index.html'; 
+            }
+        });
+        
+        signOutBtn.addEventListener('click', () => {
+            signOut(auth).catch(error => console.error("Sign out failed:", error));
+        });
+
+        // --- Dashboard Data Loading ---
+        async function loadDashboardData() {
+            if (!currentUserId) return;
+            try {
+                // Get staff count
+                const staffCol = collection(db, `users/${currentUserId}/staff`);
+                const staffSnapshot = await getDocs(staffCol);
+                staffCountEl.textContent = staffSnapshot.size;
+
+                // Get customer count
+                // !! Assumes your customer collection is named 'customers'
+                const customerCol = collection(db, `users/${currentUserId}/customers`); 
+                const customerSnapshot = await getDocs(customerCol);
+                customerCountEl.textContent = customerSnapshot.size;
+                
+                // You can add more counts here for other cards (issues, income, etc.)
+                // e.g., const issuesSnapshot = await getDocs(collection(db, `users/${currentUserId}/issues`));
+                // issueCountEl.textContent = issuesSnapshot.size;
+
+            } catch (error) {
+                console.error("Error loading dashboard data:", error);
+                staffCountEl.textContent = 'Error';
+                customerCountEl.textContent = 'Error';
+            }
+        }
+        
+        // Initialize Lucide Icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
